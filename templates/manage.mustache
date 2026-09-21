@@ -1,0 +1,112 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_videobranch/manage
+    @package mod_videobranch
+}}
+<div class="videobranch-manage">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2>{{#str}}managepaths, videobranch{{/str}} — {{name}}</h2>
+            <p class="text-muted">{{#str}}managepaths_help, videobranch{{/str}}</p>
+        </div>
+        <div class="btn-group">
+            <a class="btn btn-secondary" href="{{{viewurl}}}">{{#str}}viewactivity, videobranch{{/str}}</a>
+            <a class="btn btn-secondary" href="{{{reporturl}}}">{{#str}}report, videobranch{{/str}}</a>
+        </div>
+    </div>
+
+    <section class="card mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center"><h3>{{#str}}videos, videobranch{{/str}}</h3>
+                <a class="btn btn-primary btn-sm" href="{{{videoaddurl}}}">{{#str}}addvideo, videobranch{{/str}}</a>
+            </div>
+            {{^hasvideos}}<p class="text-muted">{{#str}}novideosconfigured, videobranch{{/str}}</p>{{/hasvideos}}
+            {{#hasvideos}}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                        <tr>
+                            <th>{{#str}}videoname, videobranch{{/str}}</th>
+                            <th>{{#str}}sourcetype, videobranch{{/str}}</th>
+                            <th>{{#str}}startvideo, videobranch{{/str}}</th>
+                            <th>{{#str}}actions, moodle{{/str}}</th>
+                        </tr>
+                        </thead>
+                        <tbody>{{#videos}}
+                            <tr>
+                                <td>{{name}}</td>
+                                <td>{{source}}</td>
+                                <td>{{#isstart}}✓{{/isstart}}</td>
+                                <td><a href="{{{editurl}}}">{{#str}}edit{{/str}}</a> · <a href="{{{deleteurl}}}"
+                                                                                          data-action="delete">{{#str}}
+                                    delete{{/str}}</a></td>
+                            </tr>{{/videos}}</tbody>
+                    </table>
+                </div>
+            {{/hasvideos}}
+        </div>
+    </section>
+
+    <section class="card mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center"><h3>{{#str}}
+                decisions, videobranch{{/str}}</h3><a class="btn btn-primary btn-sm"
+                                                      href="{{{decisionaddurl}}}">{{#str}}
+                adddecision, videobranch{{/str}}</a></div>
+            {{^hasnodes}}<p class="text-muted">{{#str}}nodecisionsconfigured, videobranch{{/str}}</p>{{/hasnodes}}
+            {{#nodes}}
+                <article class="videobranch-node border rounded p-3 mt-3">
+                    <div class="d-flex justify-content-between">
+                        <div><h4>{{name}}</h4>
+                            <div class="text-muted">{{video}} — {{time}}</div>
+                            <p>{{question}}</p></div>
+                        <div><a href="{{{editurl}}}">{{#str}}edit{{/str}}</a> · <a href="{{{deleteurl}}}"
+                                                                                   data-action="delete">{{#str}}
+                            delete{{/str}}</a></div>
+                    </div>
+                    {{#hasoptions}}
+                        <ul class="list-group mb-2">{{#options}}
+                            <li class="list-group-item d-flex justify-content-between"><span><strong>{{label}}</strong> → {{target}}</span><span><a
+                                    href="{{{editurl}}}">{{#str}}edit{{/str}}</a> · <a href="{{{deleteurl}}}"
+                                                                                       data-action="delete">{{#str}}
+                                delete{{/str}}</a></span></li>{{/options}}</ul>
+                    {{/hasoptions}}
+                    {{^hasoptions}}
+                        <p class="text-warning">{{#str}}decisionwithoutoptions, videobranch{{/str}}</p>{{/hasoptions}}
+                    <a class="btn btn-outline-primary btn-sm" href="{{{optionaddurl}}}">{{#str}}
+                        addoption, videobranch{{/str}}</a>
+                </article>
+            {{/nodes}}
+        </div>
+    </section>
+
+    <section class="card">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center"><h3>{{#str}}endings, videobranch{{/str}}</h3>
+                <a class="btn btn-primary btn-sm" href="{{{endingaddurl}}}">{{#str}}addending, videobranch{{/str}}</a>
+            </div>
+            {{^hasendings}}<p class="text-muted">{{#str}}noendingsconfigured, videobranch{{/str}}</p>{{/hasendings}}
+            {{#hasendings}}
+                <ul class="list-group">{{#endings}}
+                    <li class="list-group-item d-flex justify-content-between"><span>{{name}}</span><span><a
+                            href="{{{editurl}}}">{{#str}}edit{{/str}}</a> · <a href="{{{deleteurl}}}"
+                                                                               data-action="delete">{{#str}}
+                        delete{{/str}}</a></span></li>{{/endings}}</ul>{{/hasendings}}
+        </div>
+    </section>
+</div>

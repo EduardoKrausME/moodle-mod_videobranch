@@ -1,0 +1,112 @@
+.videobranch-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(260px, 1fr);
+    gap: 1rem;
+    align-items: start;
+}
+
+.videobranch-player-card {
+    position: relative;
+    background: #111;
+    border-radius: .5rem;
+    overflow: hidden;
+    min-height: 320px;
+}
+
+.videobranch-player video, .videobranch-player iframe, .videobranch-iframe {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border: 0;
+    background: #000;
+}
+
+.videobranch-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    background: rgba(0, 0, 0, .78);
+    color: #fff;
+    overflow: auto;
+}
+
+.videobranch-overlay[hidden] {
+    display: none;
+}
+
+.videobranch-decision, .videobranch-ending {
+    width: min(720px, 100%);
+    background: rgba(20, 20, 20, .96);
+    border-radius: .75rem;
+    padding: 1.5rem;
+    box-shadow: 0 1rem 3rem rgba(0, 0, 0, .35);
+}
+
+.videobranch-decision-name {
+    text-transform: uppercase;
+    font-size: .8rem;
+    letter-spacing: .08em;
+    opacity: .7;
+    margin-bottom: .35rem;
+}
+
+.videobranch-options {
+    display: grid;
+    gap: .65rem;
+    margin-top: 1rem;
+}
+
+.videobranch-video-title {
+    position: absolute;
+    left: .75rem;
+    bottom: .5rem;
+    z-index: 3;
+    color: #fff;
+    background: rgba(0, 0, 0, .55);
+    border-radius: .25rem;
+    padding: .2rem .5rem;
+    pointer-events: none;
+}
+
+.videobranch-path-card {
+    border: 1px solid #dee2e6;
+    border-radius: .5rem;
+    padding: 1rem;
+    background: var(--bs-body-bg, #fff);
+}
+
+.videobranch-path-list {
+    padding-left: 1.25rem;
+    margin-bottom: 0;
+}
+
+.videobranch-path-list li {
+    margin-bottom: .8rem;
+}
+
+.videobranch-path-question {
+    font-weight: 600;
+}
+
+.videobranch-ending-icon {
+    font-size: 3rem;
+    line-height: 1;
+}
+
+.videobranch-node {
+    background: var(--bs-body-bg, #fff);
+}
+
+@media (max-width: 900px) {
+    .videobranch-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .videobranch-player-card {
+        min-height: 220px;
+    }
+}

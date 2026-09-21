@@ -1,0 +1,147 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_videobranch/report
+    @package mod_videobranch
+}}
+<div class="videobranch-report">
+    <div class="d-flex justify-content-between align-items-center mb-3"><h2>{{#str}}
+        report, videobranch{{/str}} — {{name}}</h2><a class="btn btn-secondary" href="{{{manageurl}}}">{{#str}}
+        managepaths, videobranch{{/str}}</a></div>
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="h3">{{totalattempts}}</div>
+                    <div>{{#str}}participants, videobranch{{/str}}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="h3">{{totalcompleted}}</div>
+                    <div>{{#str}}completedpaths, videobranch{{/str}}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h3>{{#str}}studentpaths, videobranch{{/str}}</h3>
+    {{^hasusers}}<p class="text-muted">{{#str}}nodata, videobranch{{/str}}</p>{{/hasusers}}
+    {{#hasusers}}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>{{#str}}participant, videobranch{{/str}}</th>
+                    <th>{{#str}}status, videobranch{{/str}}</th>
+                    <th>{{#str}}final, videobranch{{/str}}</th>
+                    <th>{{#str}}lastpoint, videobranch{{/str}}</th>
+                    <th>{{#str}}lastactivity, videobranch{{/str}}</th>
+                </tr>
+                </thead>
+                <tbody>{{#users}}
+                    <tr>
+                        <td><a href="{{{url}}}">{{fullname}}</a></td>
+                        <td>{{status}}</td>
+                        <td>{{ending}}</td>
+                        <td>{{lastpoint}}</td>
+                        <td>{{timemodified}}</td>
+                    </tr>{{/users}}</tbody>
+            </table>
+        </div>{{/hasusers}}
+
+    <h3 class="mt-4">{{#str}}alternativecounts, videobranch{{/str}}</h3>
+    {{#hasoptionstats}}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>{{#str}}decision, videobranch{{/str}}</th>
+                    <th>{{#str}}alternative, videobranch{{/str}}</th>
+                    <th>{{#str}}students, videobranch{{/str}}</th>
+                </tr>
+                </thead>
+                <tbody>{{#optionstats}}
+                    <tr>
+                        <td>{{decision}}</td>
+                        <td>{{option}}</td>
+                        <td>{{users}}</td>
+                    </tr>{{/optionstats}}</tbody>
+            </table>
+        </div>{{/hasoptionstats}}
+    {{^hasoptionstats}}<p class="text-muted">{{#str}}nodata, videobranch{{/str}}</p>{{/hasoptionstats}}
+
+    <h3 class="mt-4">{{#str}}mostusedpaths, videobranch{{/str}}</h3>
+    {{#haspaths}}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>{{#str}}pathheading, videobranch{{/str}}</th>
+                    <th>{{#str}}students, videobranch{{/str}}</th>
+                </tr>
+                </thead>
+                <tbody>{{#paths}}
+                    <tr>
+                        <td>{{path}}</td>
+                        <td>{{users}}</td>
+                    </tr>{{/paths}}</tbody>
+            </table>
+        </div>{{/haspaths}}
+    {{^haspaths}}<p class="text-muted">{{#str}}nodata, videobranch{{/str}}</p>{{/haspaths}}
+
+    <h3 class="mt-4">{{#str}}endingdistribution, videobranch{{/str}}</h3>
+    {{#hasendings}}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>{{#str}}final, videobranch{{/str}}</th>
+                    <th>{{#str}}students, videobranch{{/str}}</th>
+                </tr>
+                </thead>
+                <tbody>{{#endings}}
+                    <tr>
+                        <td>{{name}}</td>
+                        <td>{{users}}</td>
+                    </tr>{{/endings}}</tbody>
+            </table>
+        </div>{{/hasendings}}
+
+    <h3 class="mt-4">{{#str}}abandonments, videobranch{{/str}}</h3>
+    {{#hasabandonments}}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>{{#str}}participant, videobranch{{/str}}</th>
+                    <th>{{#str}}lastpoint, videobranch{{/str}}</th>
+                    <th>{{#str}}lastactivity, videobranch{{/str}}</th>
+                </tr>
+                </thead>
+                <tbody>{{#abandonments}}
+                    <tr>
+                        <td><a href="{{{url}}}">{{fullname}}</a></td>
+                        <td>{{lastpoint}}</td>
+                        <td>{{timemodified}}</td>
+                    </tr>{{/abandonments}}</tbody>
+            </table>
+        </div>{{/hasabandonments}}
+    {{^hasabandonments}}<p class="text-muted">{{#str}}noabandonments, videobranch{{/str}}</p>{{/hasabandonments}}
+</div>

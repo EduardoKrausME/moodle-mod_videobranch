@@ -1,0 +1,55 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_videobranch/report_user
+    @package mod_videobranch
+}}
+<div class="videobranch-report-user">
+    <a href="{{{backurl}}}">← {{#str}}backtoreport, videobranch{{/str}}</a>
+    <h2 class="mt-3">{{fullname}}</h2>
+    <dl class="row">
+        <dt class="col-sm-3">{{#str}}status, videobranch{{/str}}</dt>
+        <dd class="col-sm-9">{{status}}</dd>
+        <dt class="col-sm-3">{{#str}}final, videobranch{{/str}}</dt>
+        <dd class="col-sm-9">{{ending}}</dd>
+    </dl>
+    {{^hasattempt}}<p class="text-muted">{{#str}}notstarted, videobranch{{/str}}</p>{{/hasattempt}}
+    {{#haschoices}}
+        <h3>{{#str}}decisionhistory, videobranch{{/str}}</h3>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>{{#str}}decision, videobranch{{/str}}</th>
+                    <th>{{#str}}alternative, videobranch{{/str}}</th>
+                    <th>{{#str}}location, videobranch{{/str}}</th>
+                    <th>{{#str}}state, videobranch{{/str}}</th>
+                    <th>{{#str}}date{{/str}}</th>
+                </tr>
+                </thead>
+                <tbody>{{#choices}}
+                    <tr>
+                        <td><strong>{{decision}}</strong><br><small>{{question}}</small></td>
+                        <td>{{option}}</td>
+                        <td>{{video}} — {{position}}</td>
+                        <td>{{state}}</td>
+                        <td>{{time}}</td>
+                    </tr>{{/choices}}</tbody>
+            </table>
+        </div>
+    {{/haschoices}}
+</div>

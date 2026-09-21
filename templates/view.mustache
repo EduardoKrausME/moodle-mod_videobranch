@@ -1,0 +1,47 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_videobranch/view
+    @package mod_videobranch
+}}
+<div class="videobranch" data-region="videobranch" data-config="{{configjson}}">
+    <div class="d-flex justify-content-between align-items-start mb-3">
+        <div>
+            <h2>{{name}}</h2>
+            {{#hasintro}}
+                <div class="videobranch-intro">{{{intro}}}</div>{{/hasintro}}
+        </div>
+        <div class="btn-group">
+            {{#canmanage}}<a class="btn btn-secondary btn-sm" href="{{{manageurl}}}">{{#str}}
+                managepaths, videobranch{{/str}}</a>{{/canmanage}}
+            {{#canreport}}<a class="btn btn-secondary btn-sm" href="{{{reporturl}}}">{{#str}}
+                report, videobranch{{/str}}</a>{{/canreport}}
+        </div>
+    </div>
+
+    <div class="videobranch-layout">
+        <section class="videobranch-player-card" aria-label="{{#str}}player, videobranch{{/str}}">
+            <div class="videobranch-player" data-region="player"></div>
+            <div class="videobranch-overlay" data-region="overlay" hidden></div>
+            <div class="videobranch-video-title" data-region="video-title"></div>
+        </section>
+        <aside class="videobranch-path-card" data-region="path-card">
+            <h3>{{#str}}pathheading, videobranch{{/str}}</h3>
+            <div data-region="path"></div>
+        </aside>
+    </div>
+</div>
