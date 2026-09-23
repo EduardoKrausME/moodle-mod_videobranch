@@ -48,7 +48,6 @@ class video_form extends \moodleform {
         $mform->hideIf('sourceurl', 'sourcetype', 'eq', 'upload');
         $mform->addElement('filemanager', 'videofile', get_string('videofile', 'videobranch'), null, [
             'subdirs' => 0,
-            'maxfiles' => 1,
             'accepted_types' => ['video'],
         ]);
         $mform->hideIf('videofile', 'sourcetype', 'neq', 'upload');
@@ -78,6 +77,15 @@ class video_form extends \moodleform {
                 $info = file_get_draft_area_info((int)$data['videofile']);
                 if (empty($info['filecount'])) {
                     $errors['videofile'] = get_string('required');
+                }
+            }
+        }
+        foreach (['videofile'] as $field) {
+            $draftid = (int)($data[$field] ?? 0);
+            if ($draftid > 0) {
+                $draftinfo = file_get_draft_area_info($draftid);
+                if ((int)$draftinfo['filecount'] > 1) {
+                    $errors[$field] = get_string('errormaxfiles', 'videobranch');
                 }
             }
         }

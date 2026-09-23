@@ -45,7 +45,7 @@ class mod_videobranch_mod_form extends moodleform_mod {
         $mform->addRule('name', null, 'required', null, 'client');
         $this->standard_intro_elements();
 
-        $mform->addElement('header', 'playbacksettings', get_string('playbacksettings', 'videobranch'));
+        $mform->addElement('html', '<h3>' . get_string('playbacksettings', 'videobranch') . '</h3>');
         $mform->addElement('select', 'resumeplayback', get_string('resumeplayback', 'videobranch'), [
             1 => get_string('resumeautomatic', 'videobranch'),
             2 => get_string('resumeask', 'videobranch'),
