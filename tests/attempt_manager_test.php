@@ -14,6 +14,13 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle. If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * Tests for Branching Video.
+ *
+ * @package    mod_videobranch
+ * @copyright  2026 Eduardo Kraus
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 namespace mod_videobranch;
 
 /**
@@ -21,6 +28,8 @@ namespace mod_videobranch;
  *
  * @package mod_videobranch
  * @category test
+ * @copyright 2026 Eduardo Kraus
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers \mod_videobranch\attempt_manager
  * @covers \mod_videobranch\branch_manager
  */
