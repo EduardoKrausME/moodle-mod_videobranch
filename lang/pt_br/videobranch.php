@@ -168,3 +168,4 @@ $string['privacy:metadata:choices:fromvideoid'] = 'O vídeo a partir do qual o a
 
 $string['invalidplaybackstate'] = 'Esta decisão não pode ser alcançada a partir do estado atual de reprodução do aluno.';
 $string['previewmode'] = 'Modo de visualização: a reprodução e as decisões não são salvas e não afetam a conclusão nem os relatórios.';
+$string['privacy:metadata:attempts:videobranchid'] = 'A atividade Vídeo com ramificações associada à tentativa do aluno.';
