@@ -91,6 +91,56 @@ class attempt_manager {
     }
 
     /**
+     * Restarts an incomplete attempt from the configured start video.
+     *
+     * Historical choices are kept but marked inactive so reports can still show
+     * that the learner previously followed another path.
+     *
+     * @param int $userid User id.
+     * @return \stdClass Updated attempt.
+     */
+    public function restart(int $userid): \stdClass {
+        global $DB;
+
+        $attempt = $this->get_or_create($userid);
+        if (!empty($attempt->completed)) {
+            return $attempt;
+        }
+
+        $transaction = $DB->start_delegated_transaction();
+        $attempt = $DB->get_record_sql(
+            'SELECT * FROM {videobranch_attempts} WHERE id = :id FOR UPDATE',
+            ['id' => $attempt->id],
+            MUST_EXIST
+        );
+        if (!empty($attempt->completed)) {
+            $transaction->allow_commit();
+            return $attempt;
+        }
+
+        $startvideo = $DB->get_record_sql(
+            'SELECT * FROM {videobranch_videos}
+              WHERE videobranchid = :activityid
+           ORDER BY isstart DESC, sortorder ASC, id ASC',
+            ['activityid' => $this->activity->id],
+            IGNORE_MULTIPLE
+        );
+        $DB->set_field('videobranch_choices', 'active', 0, ['attemptid' => $attempt->id]);
+        $attempt->currentvideoid = $startvideo ? $startvideo->id : null;
+        $attempt->currentposition = 0;
+        $attempt->pathjson = '[]';
+        $attempt->endingid = null;
+        $attempt->completed = 0;
+        $attempt->timecompleted = null;
+        $attempt->timemodified = time();
+        $DB->update_record('videobranch_attempts', $attempt);
+        $transaction->allow_commit();
+
+        $this->update_completion($userid);
+        return $attempt;
+    }
+
+    /**
      * Saves resume state and watched segments.
      *
      * @param int $userid User id.
