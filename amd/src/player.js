@@ -173,6 +173,7 @@ define(['core/ajax', 'core/templates', 'core/notification'], function (Ajax, Tem
             this.watched = config.attempt.watched || {};
             this.pendingSegments = {};
             this.saveTimer = null;
+            this.previewChoiceId = -1;
             this.activeNodeIds = new Set(this.path.map((entry) => Number(entry.nodeid)));
         }
 
@@ -204,8 +205,10 @@ define(['core/ajax', 'core/templates', 'core/notification'], function (Ajax, Tem
                 });
             }
             await this.loadVideo(videoid, position, false);
-            this.saveTimer = window.setInterval(() => this.saveState(), 5000);
-            window.addEventListener('pagehide', () => this.saveState());
+            if (!this.config.preview) {
+                this.saveTimer = window.setInterval(() => this.saveState(), 5000);
+                window.addEventListener('pagehide', () => this.saveState());
+            }
         }
 
         async loadVideo(videoid, position, autoplay) {
@@ -290,11 +293,43 @@ define(['core/ajax', 'core/templates', 'core/notification'], function (Ajax, Tem
         async openDecision(node) {
             this.decisionOpen = true;
             await Promise.resolve(this.adapter.pause());
+            this.programmaticSeek = true;
+            await Promise.resolve(this.adapter.seek(Number(node.second) || 0));
+            this.lastTime = Number(node.second) || 0;
+            this.maxAllowed = Math.max(this.maxAllowed, this.lastTime);
+            this.config.attempt.position = this.lastTime;
+            window.setTimeout(() => {
+                this.programmaticSeek = false;
+            }, 300);
             const html = await Templates.render('mod_videobranch/decision', node);
             this.overlay.innerHTML = html;
             this.overlay.hidden = false;
             this.overlay.querySelectorAll('[data-action="choose"]').forEach((button) => {
                 button.addEventListener('click', () => this.choose(node, Number(button.dataset.optionid)));
+            });
+        }
+
+        previewResponse(node, optionid) {
+            const option = (node.options || []).find((item) => Number(item.id) === Number(optionid));
+            if (!option || !option.target) {
+                throw new Error(M.util.get_string('invalidplaybackstate', 'videobranch'));
+            }
+            const entry = {
+                choiceid: this.previewChoiceId--,
+                sequence: this.path.length + 1,
+                nodeid: Number(node.id),
+                nodename: node.name,
+                question: node.question,
+                optionid: Number(option.id),
+                optionlabel: option.label,
+                videoid: Number(node.videoid),
+                second: Number(node.second) || 0,
+                timecreated: Math.floor(Date.now() / 1000),
+            };
+            this.path.push(entry);
+            return Object.assign({}, option.target, {
+                path: this.path.slice(),
+                completed: option.target.type === 'end',
             });
         }
 
@@ -305,7 +340,7 @@ define(['core/ajax', 'core/templates', 'core/notification'], function (Ajax, Tem
             });
             try {
                 await this.saveState();
-                const response = await Ajax.call([{
+                const response = this.config.preview ? this.previewResponse(node, optionid) : await Ajax.call([{
                     methodname: 'mod_videobranch_choose_option',
                     args: {
                         cmid: this.config.cmid,
@@ -340,10 +375,30 @@ define(['core/ajax', 'core/templates', 'core/notification'], function (Ajax, Tem
         async rewind(choiceid) {
             try {
                 await this.saveState();
-                const response = await Ajax.call([{
-                    methodname: 'mod_videobranch_rewind_choice',
-                    args: {cmid: this.config.cmid, choiceid: Number(choiceid)},
-                }])[0];
+                let response;
+                if (this.config.preview) {
+                    const index = this.path.findIndex((entry) => Number(entry.choiceid) === Number(choiceid));
+                    if (index < 0) {
+                        throw new Error(M.util.get_string('invalidplaybackstate', 'videobranch'));
+                    }
+                    const entry = this.path[index];
+                    const node = this.config.nodes.find((item) => Number(item.id) === Number(entry.nodeid));
+                    if (!node) {
+                        throw new Error(M.util.get_string('invalidplaybackstate', 'videobranch'));
+                    }
+                    this.path = this.path.slice(0, index);
+                    response = {
+                        videoid: Number(node.videoid),
+                        second: Math.max(0, Number(node.second) - 0.25),
+                        nodeid: Number(node.id),
+                        path: this.path.slice(),
+                    };
+                } else {
+                    response = await Ajax.call([{
+                        methodname: 'mod_videobranch_rewind_choice',
+                        args: {cmid: this.config.cmid, choiceid: Number(choiceid)},
+                    }])[0];
+                }
                 this.path = response.path || [];
                 this.activeNodeIds = new Set(this.path.map((entry) => Number(entry.nodeid)));
                 this.renderPath();
@@ -388,6 +443,9 @@ define(['core/ajax', 'core/templates', 'core/notification'], function (Ajax, Tem
         }
 
         async saveState() {
+            if (this.config.preview) {
+                return;
+            }
             if (!this.video || !this.adapter || this.decisionOpen && this.config.attempt.completed) {
                 return;
             }
@@ -398,7 +456,7 @@ define(['core/ajax', 'core/templates', 'core/notification'], function (Ajax, Tem
                 if (!segments.length && Math.abs(Number(position) - Number(this.config.attempt.position)) < 0.5) {
                     return;
                 }
-                await Ajax.call([{
+                const response = await Ajax.call([{
                     methodname: 'mod_videobranch_save_state',
                     args: {
                         cmid: this.config.cmid,
@@ -408,7 +466,7 @@ define(['core/ajax', 'core/templates', 'core/notification'], function (Ajax, Tem
                     },
                 }])[0];
                 this.pendingSegments[key] = [];
-                this.config.attempt.position = Number(position) || 0;
+                this.config.attempt.position = Number(response.position) || 0;
             } catch (error) {
                 // Playback must continue even if a transient save request fails.
             }
