@@ -114,6 +114,47 @@ final class attempt_manager_test extends \advanced_testcase {
     }
 
     /**
+     * Resume-from-start resets the persisted active path for incomplete attempts.
+     */
+    public function test_resume_from_start_resets_persisted_path(): void {
+        global $DB;
+
+        $this->resetAfterTest(true);
+        $course = $this->getDataGenerator()->create_course();
+        $student = $this->getDataGenerator()->create_and_enrol($course, 'student');
+        $activity = $this->getDataGenerator()->create_module('videobranch', [
+            'course' => $course->id,
+            'resumeplayback' => 0,
+            'allowback' => 1,
+        ]);
+        $graph = $this->create_graph($activity);
+        $cm = get_coursemodule_from_instance('videobranch', $activity->id, $course->id, false, MUST_EXIST);
+        $context = \context_module::instance($cm->id);
+        $attemptmanager = new attempt_manager($activity, $cm);
+
+        $attemptmanager->save_state($student->id, $graph->video1, 10.0, [[0.0, 10.0]]);
+        $attemptmanager->choose($student->id, $graph->node1, $graph->option1, $graph->video1, 10.0);
+
+        $this->assertEquals(1, $DB->count_records('videobranch_choices', [
+            'attemptid' => $DB->get_field('videobranch_attempts', 'id', [
+                'videobranchid' => $activity->id,
+                'userid' => $student->id,
+            ]),
+            'active' => 1,
+        ]));
+
+        $config = (new branch_manager($activity, $cm, $context))->get_player_config($student->id, false);
+
+        $this->assertEquals($graph->video1, $config['attempt']['videoid']);
+        $this->assertEquals(0.0, $config['attempt']['position']);
+        $this->assertSame([], $config['attempt']['path']);
+        $this->assertEquals(0, $DB->count_records('videobranch_choices', [
+            'attemptid' => $config['attempt']['id'],
+            'active' => 1,
+        ]));
+    }
+
+    /**
      * Playback state cannot be switched to an arbitrary video supplied by the client.
      */
     public function test_save_state_rejects_arbitrary_video_switch(): void {
