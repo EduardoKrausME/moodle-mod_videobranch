@@ -19,6 +19,7 @@
     @package mod_videobranch
 }}
 <div class="videobranch" data-region="videobranch" data-config="{{configjson}}">
+    {{#ispreview}}<div class="alert alert-info" role="status">{{#str}}previewmode, videobranch{{/str}}</div>{{/ispreview}}
     <div class="d-flex justify-content-between align-items-start mb-3">
         <div>
             <h2>{{name}}</h2>
