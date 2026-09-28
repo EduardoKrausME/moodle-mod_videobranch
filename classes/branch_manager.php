@@ -106,6 +106,9 @@ class branch_manager {
             ];
         } else {
             $attempt = $attemptmanager->get_or_create($userid);
+            if ((int)$this->activity->resumeplayback === 0 && empty($attempt->completed)) {
+                $attempt = $attemptmanager->restart($userid);
+            }
             $path = $attemptmanager->active_path($attempt->id);
             if (!empty($attempt->endingid)) {
                 $endingrecord = $DB->get_record('videobranch_endings', ['id' => $attempt->endingid]);
