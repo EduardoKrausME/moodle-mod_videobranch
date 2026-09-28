@@ -170,3 +170,4 @@ $string['privacy:metadata:choices:fromvideoid'] = 'The video from which the lear
 
 $string['invalidplaybackstate'] = 'This decision is not reachable from the learner’s current playback state.';
 $string['previewmode'] = 'Preview mode: playback and decisions are not saved and do not affect completion or reports.';
+$string['privacy:metadata:attempts:videobranchid'] = 'The Branching Video activity associated with the learner attempt.';
