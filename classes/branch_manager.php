@@ -48,14 +48,17 @@ class branch_manager {
      * Returns player configuration for one learner.
      *
      * @param int $userid User id.
+     * @param bool $preview Whether to build a non-persistent teacher preview.
      * @return array
      */
-    public function get_player_config(int $userid): array {
+    public function get_player_config(int $userid, bool $preview = false): array {
         global $DB;
         $videos = $DB->get_records('videobranch_videos',
             ['videobranchid' => $this->activity->id], 'isstart DESC, sortorder ASC, id ASC');
         $nodes = $DB->get_records('videobranch_nodes',
             ['videobranchid' => $this->activity->id], 'videoid ASC, triggersecond ASC, sortorder ASC, id ASC');
+        $endings = $DB->get_records('videobranch_endings',
+            ['videobranchid' => $this->activity->id], 'sortorder ASC, id ASC');
         $nodeids = array_keys($nodes);
         $options = [];
         if ($nodeids) {
@@ -65,10 +68,14 @@ class branch_manager {
         }
         $optionsbynode = [];
         foreach ($options as $option) {
-            $optionsbynode[$option->nodeid][] = [
+            $item = [
                 'id' => (int)$option->id,
                 'label' => format_string($option->label),
             ];
+            if ($preview) {
+                $item['target'] = $this->preview_target_data($option, $nodes, $endings);
+            }
+            $optionsbynode[$option->nodeid][] = $item;
         }
         $clientnodes = [];
         foreach ($nodes as $node) {
@@ -86,16 +93,29 @@ class branch_manager {
             $clientvideos[] = $this->video_client_data($video);
         }
         $attemptmanager = new attempt_manager($this->activity, $this->cm);
-        $attempt = $attemptmanager->get_or_create($userid);
         $ending = null;
-        if (!empty($attempt->endingid)) {
-            $endingrecord = $DB->get_record('videobranch_endings', ['id' => $attempt->endingid]);
-            if ($endingrecord) {
-                $ending = [
-                    'id' => (int)$endingrecord->id,
-                    'name' => format_string($endingrecord->name),
-                    'message' => format_text($endingrecord->message, FORMAT_HTML, ['context' => $this->context]),
-                ];
+        $path = [];
+        if ($preview) {
+            $startvideo = reset($videos);
+            $attempt = (object)[
+                'id' => 0,
+                'currentvideoid' => $startvideo ? $startvideo->id : 0,
+                'currentposition' => 0,
+                'watchedjson' => '{}',
+                'completed' => 0,
+            ];
+        } else {
+            $attempt = $attemptmanager->get_or_create($userid);
+            $path = $attemptmanager->active_path($attempt->id);
+            if (!empty($attempt->endingid)) {
+                $endingrecord = $DB->get_record('videobranch_endings', ['id' => $attempt->endingid]);
+                if ($endingrecord) {
+                    $ending = [
+                        'id' => (int)$endingrecord->id,
+                        'name' => format_string($endingrecord->name),
+                        'message' => format_text($endingrecord->message, FORMAT_HTML, ['context' => $this->context]),
+                    ];
+                }
             }
         }
         return [
@@ -105,6 +125,7 @@ class branch_manager {
             'allowseek' => (bool)$this->activity->allowseek,
             'allowback' => (bool)$this->activity->allowback,
             'showpath' => (bool)$this->activity->showpath,
+            'preview' => $preview,
             'videos' => array_values($clientvideos),
             'nodes' => array_values($clientnodes),
             'attempt' => [
@@ -112,7 +133,7 @@ class branch_manager {
                 'videoid' => (int)$attempt->currentvideoid,
                 'position' => (float)$attempt->currentposition,
                 'watched' => json_decode((string)$attempt->watchedjson, true) ?: [],
-                'path' => $attemptmanager->active_path($attempt->id),
+                'path' => $path,
                 'completed' => (bool)$attempt->completed,
                 'ending' => $ending,
             ],
@@ -296,6 +317,42 @@ class branch_manager {
             'type' => $video->sourcetype,
             'url' => $url,
             'isstart' => (bool)$video->isstart,
+        ];
+    }
+
+    /**
+     * Builds a destination payload for non-persistent teacher preview.
+     *
+     * @param \stdClass $option Option record.
+     * @param array $nodes Node records keyed by id.
+     * @param array $endings Ending records keyed by id.
+     * @return array
+     */
+    private function preview_target_data(\stdClass $option, array $nodes, array $endings): array {
+        if ($option->targettype === 'end') {
+            $ending = $endings[$option->targetendingid] ?? null;
+            return [
+                'type' => 'end', 'videoid' => 0, 'second' => 0.0, 'nodeid' => 0,
+                'endingid' => $ending ? (int)$ending->id : 0,
+                'endingname' => $ending ? format_string($ending->name) : '',
+                'message' => $ending ? format_text($ending->message, FORMAT_HTML, ['context' => $this->context]) : '',
+            ];
+        }
+        if ($option->targettype === 'node') {
+            $node = $nodes[$option->targetnodeid] ?? null;
+            return [
+                'type' => 'node',
+                'videoid' => $node ? (int)$node->videoid : 0,
+                'second' => $node ? max(0, (float)$node->triggersecond - 0.25) : 0.0,
+                'nodeid' => $node ? (int)$node->id : 0,
+                'endingid' => 0, 'endingname' => '', 'message' => '',
+            ];
+        }
+        return [
+            'type' => $option->targettype === 'video' ? 'video' : 'time',
+            'videoid' => (int)$option->targetvideoid,
+            'second' => max(0, (float)$option->targetsecond),
+            'nodeid' => 0, 'endingid' => 0, 'endingname' => '', 'message' => '',
         ];
     }
 
