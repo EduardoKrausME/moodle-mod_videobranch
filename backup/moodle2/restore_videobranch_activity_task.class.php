@@ -23,6 +23,14 @@
  */
 class restore_videobranch_activity_task extends restore_activity_task {
     /**
+     * Defines restore settings.
+     *
+     * @return void
+     */
+    protected function define_my_settings(): void {
+    }
+
+    /**
      * Adds restore steps.
      *
      * @return void
