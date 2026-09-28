@@ -167,3 +167,6 @@ $string['privacy:metadata:attempts:timecompleted'] = 'The time the learner reach
 $string['privacy:metadata:choices:attemptid'] = 'The learner attempt this decision belongs to.';
 $string['privacy:metadata:choices:sequence'] = 'The position of this decision in the learner path.';
 $string['privacy:metadata:choices:fromvideoid'] = 'The video from which the learner made this decision.';
+
+$string['invalidplaybackstate'] = 'This decision is not reachable from the learner’s current playback state.';
+$string['previewmode'] = 'Preview mode: playback and decisions are not saved and do not affect completion or reports.';
