@@ -364,7 +364,6 @@ class attempt_manager {
      * Synchronises the branch result with Moodle activity completion.
      *
      * @param int $userid User id.
-     * @param bool $complete Completion state.
      * @return void
      */
     private function update_completion(int $userid): void {
