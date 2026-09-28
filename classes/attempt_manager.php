@@ -109,18 +109,34 @@ class attempt_manager {
             ['id' => $attempt->id],
             MUST_EXIST
         );
+        if (!empty($attempt->completed) ||
+                (!empty($attempt->currentvideoid) && (int)$attempt->currentvideoid !== $videoid)) {
+            throw new \moodle_exception('invalidplaybackstate', 'mod_videobranch');
+        }
+
+        $now = time();
+        $position = max(0, $position);
+        $position = $this->limit_position_to_next_decision($attempt, $videoid, $position);
+        if (empty($this->activity->allowseek) && $position > (float)$attempt->currentposition) {
+            $elapsed = max(0, $now - (int)$attempt->timemodified);
+            $maxadvance = max(10.0, ($elapsed * 2.5) + 5.0);
+            if ($position > (float)$attempt->currentposition + $maxadvance) {
+                throw new \moodle_exception('invalidplaybackstate', 'mod_videobranch');
+            }
+        }
+
         $watched = json_decode((string)$attempt->watchedjson, true);
         if (!is_array($watched)) {
             $watched = [];
         }
         $existing = isset($watched[(string)$videoid]) && is_array($watched[(string)$videoid])
-            ? $watched[(string)$videoid]
-            : [];
+            ? $watched[(string)$videoid] : [];
+        $segments = self::normalise_segments_for_position($segments, $position);
         $watched[(string)$videoid] = self::merge_segments(array_merge($existing, $segments));
         $attempt->currentvideoid = $videoid;
-        $attempt->currentposition = max(0, $position);
+        $attempt->currentposition = $position;
         $attempt->watchedjson = json_encode($watched);
-        $attempt->timemodified = time();
+        $attempt->timemodified = $now;
         $DB->update_record('videobranch_attempts', $attempt);
         $transaction->allow_commit();
         return $attempt;
@@ -150,6 +166,7 @@ class attempt_manager {
             ['id' => $attempt->id],
             MUST_EXIST
         );
+        $this->assert_reachable_decision($attempt, $node, $videoid, $position);
         $existing = $DB->get_record('videobranch_choices', [
             'attemptid' => $attempt->id,
             'nodeid' => $nodeid,
@@ -196,7 +213,7 @@ class attempt_manager {
         $DB->update_record('videobranch_attempts', $attempt);
         $transaction->allow_commit();
 
-        $this->update_completion($userid, !empty($attempt->completed));
+        $this->update_completion($userid);
         return $destination + ['path' => $path, 'completed' => (bool)$attempt->completed];
     }
 
@@ -235,7 +252,7 @@ class attempt_manager {
         $attempt->timemodified = time();
         $DB->update_record('videobranch_attempts', $attempt);
         $transaction->allow_commit();
-        $this->update_completion($userid, false);
+        $this->update_completion($userid);
         return [
             'videoid' => (int)$node->videoid,
             'second' => (float)$attempt->currentposition,
@@ -350,15 +367,125 @@ class attempt_manager {
      * @param bool $complete Completion state.
      * @return void
      */
-    private function update_completion(int $userid, bool $complete): void {
+    private function update_completion(int $userid): void {
         $completion = new \completion_info(get_course($this->activity->course));
         if ($completion->is_enabled($this->cm)) {
-            $completion->update_state(
-                $this->cm,
-                $complete ? COMPLETION_COMPLETE : COMPLETION_INCOMPLETE,
-                $userid
-            );
+            $completion->update_state($this->cm, COMPLETION_UNKNOWN, $userid);
         }
+    }
+
+    /**
+     * Limits playback to the first unresolved decision crossed by the request.
+     *
+     * @param \stdClass $attempt Attempt record.
+     * @param int $videoid Video id.
+     * @param float $position Requested position.
+     * @return float
+     */
+    private function limit_position_to_next_decision(\stdClass $attempt, int $videoid, float $position): float {
+        if ($position <= (float)$attempt->currentposition) {
+            return $position;
+        }
+        $node = $this->find_next_unresolved_decision(
+            (int)$attempt->id, $videoid, (float)$attempt->currentposition + 0.001, $position
+        );
+        return $node ? min($position, (float)$node->triggersecond) : $position;
+    }
+
+    /**
+     * Ensures that a choice belongs to the next reachable decision.
+     *
+     * @param \stdClass $attempt Attempt record.
+     * @param \stdClass $node Decision node.
+     * @param int $videoid Current video id.
+     * @param float $position Current position.
+     * @return void
+     */
+    private function assert_reachable_decision(
+        \stdClass $attempt,
+        \stdClass $node,
+        int $videoid,
+        float $position
+    ): void {
+        if (!empty($attempt->completed) ||
+                (int)$attempt->currentvideoid !== $videoid ||
+                (int)$node->videoid !== $videoid ||
+                abs($position - (float)$node->triggersecond) > 2.0 ||
+                abs((float)$attempt->currentposition - (float)$node->triggersecond) > 2.0) {
+            throw new \moodle_exception('invalidplaybackstate', 'mod_videobranch');
+        }
+        $next = $this->find_next_unresolved_decision(
+            (int)$attempt->id,
+            $videoid,
+            max(0, (float)$attempt->currentposition - 0.5),
+            (float)$node->triggersecond + 0.5
+        );
+        if (!$next || (int)$next->id !== (int)$node->id) {
+            throw new \moodle_exception('invalidplaybackstate', 'mod_videobranch');
+        }
+    }
+
+    /**
+     * Finds the first decision that is not in the active path.
+     *
+     * @param int $attemptid Attempt id.
+     * @param int $videoid Video id.
+     * @param float $minsecond Minimum time.
+     * @param float|null $maxsecond Maximum time.
+     * @return \stdClass|null
+     */
+    private function find_next_unresolved_decision(
+        int $attemptid,
+        int $videoid,
+        float $minsecond,
+        ?float $maxsecond = null
+    ): ?\stdClass {
+        global $DB;
+        $params = [
+            'attemptid' => $attemptid,
+            'activityid' => $this->activity->id,
+            'videoid' => $videoid,
+            'minsecond' => $minsecond,
+        ];
+        $maxsql = '';
+        if ($maxsecond !== null) {
+            $maxsql = ' AND n.triggersecond <= :maxsecond';
+            $params['maxsecond'] = $maxsecond;
+        }
+        $sql = 'SELECT n.id, n.triggersecond
+                  FROM {videobranch_nodes} n
+             LEFT JOIN {videobranch_choices} c
+                    ON c.nodeid = n.id
+                   AND c.attemptid = :attemptid
+                   AND c.active = 1
+                 WHERE n.videobranchid = :activityid
+                   AND n.videoid = :videoid
+                   AND n.triggersecond >= :minsecond
+                   AND c.id IS NULL' . $maxsql . '
+              ORDER BY n.triggersecond ASC, n.sortorder ASC, n.id ASC';
+        return $DB->get_record_sql($sql, $params, IGNORE_MULTIPLE) ?: null;
+    }
+
+    /**
+     * Clips watched segments to the accepted playback position.
+     *
+     * @param array $segments Raw segments.
+     * @param float $position Accepted position.
+     * @return array
+     */
+    private static function normalise_segments_for_position(array $segments, float $position): array {
+        $clean = [];
+        foreach ($segments as $segment) {
+            if (!is_array($segment) || count($segment) < 2) {
+                continue;
+            }
+            $start = max(0, min((float)$segment[0], $position));
+            $end = max($start, min((float)$segment[1], $position));
+            if ($end > $start) {
+                $clean[] = [$start, $end];
+            }
+        }
+        return $clean;
     }
 
     /**
