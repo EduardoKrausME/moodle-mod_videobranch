@@ -40,7 +40,7 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
         $this->assertArrayHasKey('videobranch_attempts', $tables);
         $attemptfields = $tables['videobranch_attempts']->get_privacy_fields();
         foreach ([
-            'userid', 'currentvideoid', 'currentposition', 'watchedjson', 'pathjson',
+            'videobranchid', 'userid', 'currentvideoid', 'currentposition', 'watchedjson', 'pathjson',
             'endingid', 'completed', 'timecreated', 'timemodified', 'timecompleted',
         ] as $field) {
             $this->assertArrayHasKey($field, $attemptfields);
