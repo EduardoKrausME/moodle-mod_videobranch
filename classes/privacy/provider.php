@@ -43,6 +43,7 @@ class provider implements
      */
     public static function get_metadata(collection $collection): collection {
         $collection->add_database_table('videobranch_attempts', [
+            'videobranchid' => 'privacy:metadata:attempts:videobranchid',
             'userid' => 'privacy:metadata:attempts:userid',
             'currentvideoid' => 'privacy:metadata:attempts:currentvideoid',
             'currentposition' => 'privacy:metadata:attempts:currentposition',
