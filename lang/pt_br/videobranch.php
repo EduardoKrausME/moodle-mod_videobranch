@@ -165,3 +165,6 @@ $string['privacy:metadata:attempts:timecompleted'] = 'Quando o aluno alcançou u
 $string['privacy:metadata:choices:attemptid'] = 'A tentativa do aluno à qual esta decisão pertence.';
 $string['privacy:metadata:choices:sequence'] = 'A posição desta decisão no caminho do aluno.';
 $string['privacy:metadata:choices:fromvideoid'] = 'O vídeo a partir do qual o aluno tomou esta decisão.';
+
+$string['invalidplaybackstate'] = 'Esta decisão não pode ser alcançada a partir do estado atual de reprodução do aluno.';
+$string['previewmode'] = 'Modo de visualização: a reprodução e as decisões não são salvas e não afetam a conclusão nem os relatórios.';
