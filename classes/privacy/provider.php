@@ -50,12 +50,17 @@ class provider implements
             'pathjson' => 'privacy:metadata:attempts:pathjson',
             'endingid' => 'privacy:metadata:attempts:endingid',
             'completed' => 'privacy:metadata:attempts:completed',
+            'timecreated' => 'privacy:metadata:attempts:timecreated',
             'timemodified' => 'privacy:metadata:attempts:timemodified',
+            'timecompleted' => 'privacy:metadata:attempts:timecompleted',
         ], 'privacy:metadata:attempts');
         $collection->add_database_table('videobranch_choices', [
+            'attemptid' => 'privacy:metadata:choices:attemptid',
             'nodeid' => 'privacy:metadata:choices:nodeid',
             'optionid' => 'privacy:metadata:choices:optionid',
+            'sequence' => 'privacy:metadata:choices:sequence',
             'active' => 'privacy:metadata:choices:active',
+            'fromvideoid' => 'privacy:metadata:choices:fromvideoid',
             'fromposition' => 'privacy:metadata:choices:fromposition',
             'timecreated' => 'privacy:metadata:choices:timecreated',
         ], 'privacy:metadata:choices');

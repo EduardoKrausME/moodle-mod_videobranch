@@ -132,7 +132,8 @@ function videobranch_delete_instance(int $id): bool {
  */
 function videobranch_get_coursemodule_info($coursemodule): ?cached_cm_info {
     global $DB;
-    $activity = $DB->get_record('videobranch', ['id' => $coursemodule->instance], 'id,name,intro,introformat');
+    $activity = $DB->get_record('videobranch', ['id' => $coursemodule->instance],
+        'id,name,intro,introformat,completionending');
     if (!$activity) {
         return null;
     }
@@ -140,6 +141,9 @@ function videobranch_get_coursemodule_info($coursemodule): ?cached_cm_info {
     $info->name = $activity->name;
     if ($coursemodule->showdescription) {
         $info->content = format_module_intro('videobranch', $activity, $coursemodule->id, false);
+    }
+    if ($coursemodule->completion == COMPLETION_TRACKING_AUTOMATIC) {
+        $info->customdata['customcompletionrules']['completionending'] = $activity->completionending;
     }
     return $info;
 }
@@ -211,4 +215,74 @@ function videobranch_extend_settings_navigation(settings_navigation $settingsnav
         $node->add(get_string('report', 'videobranch'),
             new moodle_url('/mod/videobranch/report/report.php', ['id' => $PAGE->cm->id]));
     }
+}
+
+
+/**
+ * Adds Branching Video reset options to the course reset form.
+ *
+ * @param MoodleQuickForm $mform Reset form.
+ * @return void
+ */
+function videobranch_reset_course_form_definition(&$mform): void {
+    $mform->addElement('header', 'videobranchheader', get_string('modulenameplural', 'videobranch'));
+    $mform->addElement('advcheckbox', 'reset_videobranch', get_string('resetattempts', 'videobranch'));
+}
+
+/**
+ * Returns default course reset values.
+ *
+ * @param stdClass $course Course record.
+ * @return array
+ */
+function videobranch_reset_course_form_defaults(stdClass $course): array {
+    return ['reset_videobranch' => 1];
+}
+
+/**
+ * Deletes learner attempts and decision history during course reset.
+ *
+ * @param stdClass $data Reset data.
+ * @return array
+ */
+function videobranch_reset_userdata(stdClass $data): array {
+    global $DB;
+
+    $status = [];
+    if (empty($data->reset_videobranch)) {
+        return $status;
+    }
+
+    $activities = $DB->get_records('videobranch', ['course' => $data->courseid], '', 'id');
+    if ($activities) {
+        $activityids = array_keys($activities);
+        [$insql, $params] = $DB->get_in_or_equal($activityids, SQL_PARAMS_NAMED, 'activity');
+        $attemptids = $DB->get_fieldset_select(
+            'videobranch_attempts',
+            'id',
+            "videobranchid {$insql}",
+            $params
+        );
+        if ($attemptids) {
+            [$attemptsql, $attemptparams] = $DB->get_in_or_equal($attemptids, SQL_PARAMS_NAMED, 'attempt');
+            $DB->delete_records_select('videobranch_choices', "attemptid {$attemptsql}", $attemptparams);
+        }
+        $DB->delete_records_select('videobranch_attempts', "videobranchid {$insql}", $params);
+
+        $course = get_course($data->courseid);
+        $completion = new completion_info($course);
+        foreach ($activityids as $activityid) {
+            $cm = get_coursemodule_from_instance('videobranch', $activityid, $data->courseid, false, IGNORE_MISSING);
+            if ($cm) {
+                $completion->delete_all_state($cm);
+            }
+        }
+    }
+
+    $status[] = [
+        'component' => get_string('modulenameplural', 'videobranch'),
+        'item' => get_string('resetattempts', 'videobranch'),
+        'error' => false,
+    ];
+    return $status;
 }

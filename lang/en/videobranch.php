@@ -160,3 +160,10 @@ $string['videofile'] = 'Video file';
 $string['videoname'] = 'Video name';
 $string['videos'] = 'Videos';
 $string['viewactivity'] = 'View activity';
+
+$string['resetattempts'] = 'Delete all Branching Video learner attempts and decision history';
+$string['privacy:metadata:attempts:timecreated'] = 'The time the learner attempt was created.';
+$string['privacy:metadata:attempts:timecompleted'] = 'The time the learner reached a valid ending.';
+$string['privacy:metadata:choices:attemptid'] = 'The learner attempt this decision belongs to.';
+$string['privacy:metadata:choices:sequence'] = 'The position of this decision in the learner path.';
+$string['privacy:metadata:choices:fromvideoid'] = 'The video from which the learner made this decision.';

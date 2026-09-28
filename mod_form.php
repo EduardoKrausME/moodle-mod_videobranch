@@ -72,7 +72,7 @@ class mod_videobranch_mod_form extends moodleform_mod {
      */
     public function add_completion_rules(): array {
         $mform = $this->_form;
-        $field = 'completionending_videobranch';
+        $field = 'completionending' . $this->get_suffix();
         $mform->addElement('advcheckbox', $field, get_string('completionending', 'videobranch'));
         $mform->setDefault($field, 1);
         return [$field];
@@ -85,10 +85,11 @@ class mod_videobranch_mod_form extends moodleform_mod {
      * @return bool
      */
     public function completion_rule_enabled($data): bool {
+        $field = 'completionending' . $this->get_suffix();
         if (is_array($data)) {
-            return !empty($data['completionending_videobranch']);
+            return !empty($data[$field]);
         }
-        return !empty($data->completionending_videobranch);
+        return !empty($data->{$field});
     }
 
     /**
@@ -98,25 +99,11 @@ class mod_videobranch_mod_form extends moodleform_mod {
      * @return void
      */
     public function data_preprocessing(&$defaultvalues): void {
+        parent::data_preprocessing($defaultvalues);
+        $field = 'completionending' . $this->get_suffix();
         if (array_key_exists('completionending', $defaultvalues)) {
-            $defaultvalues['completionending_videobranch'] = $defaultvalues['completionending'];
+            $defaultvalues[$field] = $defaultvalues['completionending'];
         }
     }
 
-    /**
-     * Returns form data with Moodle completion suffix removed.
-     *
-     * @return stdClass|null
-     */
-    public function get_data() {
-        $data = parent::get_data();
-        if (!$data) {
-            return $data;
-        }
-        if (property_exists($data, 'completionending_videobranch')) {
-            $data->completionending = (int)$data->completionending_videobranch;
-            unset($data->completionending_videobranch);
-        }
-        return $data;
-    }
 }

@@ -158,3 +158,10 @@ $string['videofile'] = 'Arquivo de vídeo';
 $string['videoname'] = 'Nome do vídeo';
 $string['videos'] = 'Vídeos';
 $string['viewactivity'] = 'Visualizar atividade';
+
+$string['resetattempts'] = 'Excluir todas as tentativas e o histórico de decisões dos alunos no Vídeo Ramificado';
+$string['privacy:metadata:attempts:timecreated'] = 'Quando a tentativa do aluno foi criada.';
+$string['privacy:metadata:attempts:timecompleted'] = 'Quando o aluno alcançou um final válido.';
+$string['privacy:metadata:choices:attemptid'] = 'A tentativa do aluno à qual esta decisão pertence.';
+$string['privacy:metadata:choices:sequence'] = 'A posição desta decisão no caminho do aluno.';
+$string['privacy:metadata:choices:fromvideoid'] = 'O vídeo a partir do qual o aluno tomou esta decisão.';

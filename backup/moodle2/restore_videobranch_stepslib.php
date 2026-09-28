@@ -26,6 +26,8 @@ class restore_videobranch_activity_structure_step extends restore_activity_struc
     private array $pendingoptions = [];
     /** @var array Choices waiting until option mappings exist. */
     private array $pendingchoices = [];
+    /** @var int[] Restored attempt ids whose path cache must be rebuilt. */
+    private array $restoredattemptids = [];
 
     /**
      * Defines restore paths.
@@ -138,13 +140,14 @@ class restore_videobranch_activity_structure_step extends restore_activity_struc
         $data->userid = $this->get_mappingid('user', $data->userid);
         $data->currentvideoid = $data->currentvideoid ? $this->get_mappingid('videobranch_video', $data->currentvideoid) : null;
         $data->endingid = $data->endingid ? $this->get_mappingid('videobranch_ending', $data->endingid) : null;
-        $data->watchedjson = '{}';
+        $data->watchedjson = $this->remap_watched_json((string)$data->watchedjson);
         $data->pathjson = '[]';
         if (!$data->userid) {
             return;
         }
         $newid = $DB->insert_record('videobranch_attempts', $data);
         $this->set_mapping('videobranch_attempt', $oldid, $newid);
+        $this->restoredattemptids[] = $newid;
     }
 
     /**
@@ -188,7 +191,65 @@ class restore_videobranch_activity_structure_step extends restore_activity_struc
                 $DB->insert_record('videobranch_choices', $data);
             }
         }
+        foreach ($this->restoredattemptids as $attemptid) {
+            $this->rebuild_attempt_path($attemptid);
+        }
         $this->add_related_files('mod_videobranch', 'intro', null);
         $this->add_related_files('mod_videobranch', 'video', 'videobranch_video');
     }
+
+    /**
+     * Remaps video ids used as keys in watched segment JSON.
+     *
+     * @param string $json Original watched JSON.
+     * @return string
+     */
+    private function remap_watched_json(string $json): string {
+        $watched = json_decode($json, true);
+        if (!is_array($watched)) {
+            return '{}';
+        }
+        $remapped = [];
+        foreach ($watched as $oldvideoid => $segments) {
+            $newvideoid = $this->get_mappingid('videobranch_video', (int)$oldvideoid);
+            if ($newvideoid && is_array($segments)) {
+                $remapped[(string)$newvideoid] = $segments;
+            }
+        }
+        return json_encode($remapped);
+    }
+
+    /**
+     * Rebuilds cached active path data using restored choices.
+     *
+     * @param int $attemptid Restored attempt id.
+     * @return void
+     */
+    private function rebuild_attempt_path(int $attemptid): void {
+        global $DB;
+        $sql = 'SELECT c.id AS choiceid, c.sequence, c.nodeid, c.optionid, c.timecreated,
+                       n.name AS nodename, n.question, n.videoid, n.triggersecond, o.label AS optionlabel
+                  FROM {videobranch_choices} c
+                  JOIN {videobranch_nodes} n ON n.id = c.nodeid
+                  JOIN {videobranch_options} o ON o.id = c.optionid
+                 WHERE c.attemptid = :attemptid AND c.active = 1
+              ORDER BY c.sequence ASC, c.id ASC';
+        $path = [];
+        foreach ($DB->get_records_sql($sql, ['attemptid' => $attemptid]) as $record) {
+            $path[] = [
+                'choiceid' => (int)$record->choiceid,
+                'sequence' => (int)$record->sequence,
+                'nodeid' => (int)$record->nodeid,
+                'nodename' => format_string($record->nodename),
+                'question' => format_string($record->question),
+                'optionid' => (int)$record->optionid,
+                'optionlabel' => format_string($record->optionlabel),
+                'videoid' => (int)$record->videoid,
+                'second' => (float)$record->triggersecond,
+                'timecreated' => (int)$record->timecreated,
+            ];
+        }
+        $DB->set_field('videobranch_attempts', 'pathjson', json_encode($path), ['id' => $attemptid]);
+    }
 }
+
