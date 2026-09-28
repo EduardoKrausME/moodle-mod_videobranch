@@ -31,24 +31,28 @@ $activity = $DB->get_record('videobranch', ['id' => $cm->instance], '*', MUST_EX
 require_course_login($course, true, $cm);
 $context = context_module::instance($cm->id);
 require_capability('mod/videobranch:view', $context);
+$canmanage = has_capability('mod/videobranch:manage', $context);
+$preview = $canmanage && optional_param('preview', 1, PARAM_BOOL);
 
 $PAGE->set_url('/mod/videobranch/view.php', ['id' => $cm->id]);
 $PAGE->set_title(format_string($activity->name));
 $PAGE->set_heading($course->fullname);
 $PAGE->set_context($context);
 
-$event = \mod_videobranch\event\course_module_viewed::create([
-    'objectid' => $activity->id,
-    'context' => $context,
-]);
-$event->add_record_snapshot('course_modules', $cm);
-$event->add_record_snapshot('videobranch', $activity);
-$event->trigger();
-$completion = new completion_info($course);
-$completion->set_module_viewed($cm);
+if (!$preview) {
+    $event = \mod_videobranch\event\course_module_viewed::create([
+        'objectid' => $activity->id,
+        'context' => $context,
+    ]);
+    $event->add_record_snapshot('course_modules', $cm);
+    $event->add_record_snapshot('videobranch', $activity);
+    $event->trigger();
+    $completion = new completion_info($course);
+    $completion->set_module_viewed($cm);
+}
 
 $engine = new \mod_videobranch\branch_manager($activity, $cm, $context);
-$config = $engine->get_player_config($USER->id);
+$config = $engine->get_player_config($USER->id, $preview);
 
 if (empty($config['videos'])) {
     echo $OUTPUT->header();
@@ -66,7 +70,8 @@ $templatedata = [
     'intro' => format_module_intro('videobranch', $activity, $cm->id),
     'hasintro' => trim((string)$activity->intro) !== '',
     'configjson' => json_encode($config, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT),
-    'canmanage' => has_capability('mod/videobranch:manage', $context),
+    'canmanage' => $canmanage,
+    'ispreview' => $preview,
     'manageurl' => (string)new moodle_url('/mod/videobranch/manage.php', ['id' => $cm->id]),
     'canreport' => has_capability('mod/videobranch:viewreport', $context),
     'reporturl' => (string)new moodle_url('/mod/videobranch/report/report.php', ['id' => $cm->id]),
