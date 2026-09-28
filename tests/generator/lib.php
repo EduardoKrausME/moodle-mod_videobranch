@@ -27,6 +27,11 @@ defined('MOODLE_INTERNAL') || die();
 
 /**
  * Test data generator for mod_videobranch.
+ *
+ * @package    mod_videobranch
+ * @category   test
+ * @copyright  2026 Eduardo Kraus
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class mod_videobranch_generator extends testing_module_generator {
     /**
