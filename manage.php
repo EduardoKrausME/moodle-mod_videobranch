@@ -43,7 +43,7 @@ $data['videoaddurl'] = (string)new moodle_url('/mod/videobranch/video.php', ['id
 $data['decisionaddurl'] = (string)new moodle_url('/mod/videobranch/decision.php', ['id' => $cm->id]);
 $data['endingaddurl'] = (string)new moodle_url('/mod/videobranch/ending.php', ['id' => $cm->id]);
 $data['reporturl'] = (string)new moodle_url('/mod/videobranch/report/report.php', ['id' => $cm->id]);
-$data['viewurl'] = (string)new moodle_url('/mod/videobranch/view.php', ['id' => $cm->id]);
+$data['viewurl'] = (string)new moodle_url('/mod/videobranch/view.php', ['id' => $cm->id, 'preview' => 1]);
 
 $PAGE->requires->strings_for_js(['confirmdelete', 'confirmdeletebody'], 'videobranch');
 $PAGE->requires->strings_for_js(['delete', 'cancel']);
