@@ -70,7 +70,11 @@ class save_state extends external_api {
         }
         $manager = new \mod_videobranch\attempt_manager($activity, $cm);
         $attempt = $manager->save_state($USER->id, $params['videoid'], $params['position'], $normalised);
-        return ['success' => true, 'timemodified' => (int)$attempt->timemodified];
+        return [
+            'success' => true,
+            'timemodified' => (int)$attempt->timemodified,
+            'position' => (float)$attempt->currentposition,
+        ];
     }
 
     /**
@@ -82,6 +86,7 @@ class save_state extends external_api {
         return new external_single_structure([
             'success' => new external_value(PARAM_BOOL, 'Whether state was saved'),
             'timemodified' => new external_value(PARAM_INT, 'Modification timestamp'),
+            'position' => new external_value(PARAM_FLOAT, 'Accepted playback position'),
         ]);
     }
 }
