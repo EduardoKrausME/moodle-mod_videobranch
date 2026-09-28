@@ -79,7 +79,7 @@ $templatedata = [
 
 $PAGE->requires->strings_for_js([
     'chooseoption', 'resumequestion', 'resumeyes', 'resumeno', 'decisionrequired', 'pathheading',
-    'endingreached', 'savingerror', 'invalidvideo', 'backnotallowed',
+    'endingreached', 'savingerror', 'invalidvideo', 'invalidplaybackstate', 'backnotallowed',
 ], 'videobranch');
 $PAGE->requires->js_call_amd('mod_videobranch/player', 'init');
 
