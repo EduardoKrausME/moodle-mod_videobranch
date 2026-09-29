@@ -25,7 +25,6 @@ require_once($CFG->dirroot . '/mod/videobranch/backup/moodle2/backup_videobranch
  * @copyright 2026 Eduardo Kraus
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 class backup_videobranch_activity_task extends backup_activity_task {
     /**
      * Defines backup settings.
