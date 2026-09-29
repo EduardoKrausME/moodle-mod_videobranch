@@ -23,6 +23,14 @@
  */
 class backup_videobranch_activity_task extends backup_activity_task {
     /**
+     * Defines backup settings.
+     *
+     * @return void
+     */
+    protected function define_my_settings(): void {
+    }
+
+    /**
      * Adds backup steps.
      *
      * @return void
