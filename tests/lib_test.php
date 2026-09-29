@@ -44,7 +44,7 @@ final class lib_test extends \advanced_testcase {
      */
     public function test_get_coursemodule_info_exposes_completion_rule(): void {
         $this->resetAfterTest(true);
-        $course = $this->getDataGenerator()->create_course();
+        $course = $this->getDataGenerator()->create_course(['enablecompletion' => COMPLETION_ENABLED]);
         $activity = $this->getDataGenerator()->get_plugin_generator('mod_videobranch')->create_instance(
             ['course' => $course->id, 'completionending' => 1],
             ['completion' => COMPLETION_TRACKING_AUTOMATIC]
