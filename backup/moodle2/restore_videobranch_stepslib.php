@@ -252,4 +252,3 @@ class restore_videobranch_activity_structure_step extends restore_activity_struc
         $DB->set_field('videobranch_attempts', 'pathjson', json_encode($path), ['id' => $attemptid]);
     }
 }
-

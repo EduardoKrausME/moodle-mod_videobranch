@@ -21,6 +21,11 @@
  * @copyright 2026 Eduardo Kraus
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+defined('MOODLE_INTERNAL') || die();
+
+require_once($CFG->dirroot . '/mod/videobranch/backup/moodle2/restore_videobranch_stepslib.php');
+
 class restore_videobranch_activity_task extends restore_activity_task {
     /**
      * Defines restore settings.

@@ -143,7 +143,11 @@ function videobranch_get_coursemodule_info($coursemodule): ?cached_cm_info {
         $info->content = format_module_intro('videobranch', $activity, $coursemodule->id, false);
     }
     if ($coursemodule->completion == COMPLETION_TRACKING_AUTOMATIC) {
-        $info->customdata['customcompletionrules']['completionending'] = $activity->completionending;
+        $info->customdata = [
+            'customcompletionrules' => [
+                'completionending' => (int)$activity->completionending,
+            ],
+        ];
     }
     return $info;
 }
