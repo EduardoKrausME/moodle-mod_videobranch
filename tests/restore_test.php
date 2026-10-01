@@ -35,6 +35,8 @@ use restore_dbops;
 /**
  * Tests Branching Video backup and restore.
  *
+ * @coversNothing
+ */
  * @package mod_videobranch
  * @category test
  * @copyright 2026 Eduardo Kraus
