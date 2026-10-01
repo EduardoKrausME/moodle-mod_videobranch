@@ -35,6 +35,8 @@ require_once($CFG->dirroot . '/mod/videobranch/lib.php');
 /**
  * Tests core module callbacks.
  *
+ * @coversNothing
+ */
  * @package mod_videobranch
  * @category test
  * @copyright 2026 Eduardo Kraus
