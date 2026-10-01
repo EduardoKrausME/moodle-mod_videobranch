@@ -25,7 +25,6 @@
 namespace mod_videobranch;
 
 use advanced_testcase;
-use PHPUnit\Framework\Attributes\CoversFunction;
 
 defined('MOODLE_INTERNAL') || die;
 global $CFG;
@@ -34,14 +33,12 @@ require_once($CFG->dirroot . '/mod/videobranch/lib.php');
 
 /**
  * Tests core module callbacks.
- *
- * @coversNothing
  */
-#[CoversFunction('videobranch_get_coursemodule_info')]
-#[CoversFunction('videobranch_reset_userdata')]
 final class lib_test extends advanced_testcase {
     /**
      * Custom completion rules are exposed through cached course module information.
+     *
+     * @covers ::videobranch_get_coursemodule_info
      */
     public function test_get_coursemodule_info_exposes_completion_rule(): void {
         $this->resetAfterTest(true);
@@ -60,6 +57,8 @@ final class lib_test extends advanced_testcase {
 
     /**
      * Course reset removes attempts and dependent choices.
+     *
+     * @covers ::videobranch_reset_userdata
      */
     public function test_reset_userdata_removes_attempts_and_choices(): void {
         global $DB;
