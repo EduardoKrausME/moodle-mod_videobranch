@@ -22,6 +22,9 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use mod_videobranch\branch_manager;
+use mod_videobranch\event\course_module_viewed;
+
 require_once(__DIR__ . '/../../config.php');
 
 $id = required_param('id', PARAM_INT);
@@ -40,7 +43,7 @@ $PAGE->set_heading($course->fullname);
 $PAGE->set_context($context);
 
 if (!$preview) {
-    $event = \mod_videobranch\event\course_module_viewed::create([
+    $event = course_module_viewed::create([
         'objectid' => $activity->id,
         'context' => $context,
     ]);
@@ -51,7 +54,7 @@ if (!$preview) {
     $completion->set_module_viewed($cm);
 }
 
-$engine = new \mod_videobranch\branch_manager($activity, $cm, $context);
+$engine = new branch_manager($activity, $cm, $context);
 $config = $engine->get_player_config($USER->id, $preview);
 
 if (empty($config['videos'])) {

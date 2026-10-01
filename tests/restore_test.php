@@ -12,7 +12,7 @@
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * Tests for Branching Video.
@@ -21,11 +21,14 @@
  * @copyright  2026 Eduardo Kraus
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 namespace mod_videobranch;
 
+use advanced_testcase;
 use backup;
 use backup_controller;
 use backup_setting;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use restore_controller;
 use restore_dbops;
 
@@ -37,8 +40,8 @@ use restore_dbops;
  * @copyright 2026 Eduardo Kraus
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-#[\PHPUnit\Framework\Attributes\CoversNothing]
-final class restore_test extends \advanced_testcase {
+#[CoversNothing]
+final class restore_test extends advanced_testcase {
     /**
      * Loads backup and restore APIs.
      */

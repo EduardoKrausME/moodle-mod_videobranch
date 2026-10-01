@@ -16,11 +16,13 @@
 
 namespace mod_videobranch\external;
 
+use context_module;
 use core_external\external_api;
 use core_external\external_function_parameters;
 use core_external\external_multiple_structure;
 use core_external\external_single_structure;
 use core_external\external_value;
+use mod_videobranch\attempt_manager;
 
 /**
  * Saves learner playback state.
@@ -60,7 +62,7 @@ class save_state extends external_api {
         global $DB, $USER;
         $params = self::validate_parameters(self::execute_parameters(), compact('cmid', 'videoid', 'position', 'segments'));
         $cm = get_coursemodule_from_id('videobranch', $params['cmid'], 0, false, MUST_EXIST);
-        $context = \context_module::instance($cm->id);
+        $context = context_module::instance($cm->id);
         self::validate_context($context);
         require_capability('mod/videobranch:view', $context);
         $activity = $DB->get_record('videobranch', ['id' => $cm->instance], '*', MUST_EXIST);
@@ -68,7 +70,7 @@ class save_state extends external_api {
         foreach ($params['segments'] as $segment) {
             $normalised[] = [(float)$segment['start'], (float)$segment['end']];
         }
-        $manager = new \mod_videobranch\attempt_manager($activity, $cm);
+        $manager = new attempt_manager($activity, $cm);
         $attempt = $manager->save_state($USER->id, $params['videoid'], $params['position'], $normalised);
         return [
             'success' => true,

@@ -16,11 +16,13 @@
 
 namespace mod_videobranch\external;
 
+use context_module;
 use core_external\external_api;
 use core_external\external_function_parameters;
 use core_external\external_multiple_structure;
 use core_external\external_single_structure;
 use core_external\external_value;
+use mod_videobranch\attempt_manager;
 
 /**
  * Records one branching choice.
@@ -60,11 +62,11 @@ class choose_option extends external_api {
         $params = self::validate_parameters(self::execute_parameters(),
             compact('cmid', 'nodeid', 'optionid', 'videoid', 'position'));
         $cm = get_coursemodule_from_id('videobranch', $params['cmid'], 0, false, MUST_EXIST);
-        $context = \context_module::instance($cm->id);
+        $context = context_module::instance($cm->id);
         self::validate_context($context);
         require_capability('mod/videobranch:view', $context);
         $activity = $DB->get_record('videobranch', ['id' => $cm->instance], '*', MUST_EXIST);
-        return (new \mod_videobranch\attempt_manager($activity, $cm))->choose(
+        return (new attempt_manager($activity, $cm))->choose(
             $USER->id, $params['nodeid'], $params['optionid'], $params['videoid'], $params['position']
         );
     }

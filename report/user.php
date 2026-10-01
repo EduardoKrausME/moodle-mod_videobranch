@@ -22,6 +22,8 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use mod_videobranch\report_service;
+
 require_once(__DIR__ . '/../../../config.php');
 
 $id = required_param('id', PARAM_INT);
@@ -36,7 +38,7 @@ require_capability('mod/videobranch:viewreport', $context);
 $PAGE->set_url('/mod/videobranch/report/user.php', ['id' => $cm->id, 'userid' => $userid]);
 $PAGE->set_title(get_string('userreport', 'videobranch'));
 $PAGE->set_heading($course->fullname);
-$data = (new \mod_videobranch\report_service($activity, $cm))->user($userid);
+$data = (new report_service($activity, $cm))->user($userid);
 $data['backurl'] = (string)new moodle_url('/mod/videobranch/report/report.php', ['id' => $cm->id]);
 
 echo $OUTPUT->header();

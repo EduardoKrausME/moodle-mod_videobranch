@@ -22,6 +22,8 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use mod_videobranch\form\option_form;
+
 require_once(__DIR__ . '/../../config.php');
 require_once("{$CFG->libdir}/formslib.php");
 
@@ -48,7 +50,7 @@ $endings = $DB->get_records_menu('videobranch_endings',
 $PAGE->set_url('/mod/videobranch/option.php', ['id' => $cm->id, 'nodeid' => $nodeid, 'optionid' => $optionid]);
 $PAGE->set_title(get_string($option ? 'editoption' : 'addoption', 'videobranch'));
 $PAGE->set_heading($course->fullname);
-$form = new \mod_videobranch\form\option_form(null, [
+$form = new option_form(null, [
     'nodeid' => $node->id,
     'videos' => ['' => get_string('choose')] + $videos,
     'nodes' => ['' => get_string('choose')] + $nodes,

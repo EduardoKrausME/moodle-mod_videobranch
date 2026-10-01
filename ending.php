@@ -22,6 +22,8 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use mod_videobranch\form\ending_form;
+
 require_once(__DIR__ . '/../../config.php');
 require_once("{$CFG->libdir}/formslib.php");
 
@@ -39,7 +41,7 @@ $ending = $endingid ? $DB->get_record('videobranch_endings',
 $PAGE->set_url('/mod/videobranch/ending.php', ['id' => $cm->id, 'endingid' => $endingid]);
 $PAGE->set_title(get_string($ending ? 'editending' : 'addending', 'videobranch'));
 $PAGE->set_heading($course->fullname);
-$form = new \mod_videobranch\form\ending_form();
+$form = new ending_form();
 if ($form->is_cancelled()) {
     redirect(new moodle_url('/mod/videobranch/manage.php', ['id' => $cm->id]));
 }

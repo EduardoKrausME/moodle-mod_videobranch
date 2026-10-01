@@ -16,6 +16,12 @@
 
 namespace mod_videobranch;
 
+use cm_info;
+use context_module;
+use moodle_exception;
+use moodle_url;
+use stdClass;
+
 /**
  * Provides branch configuration to learner and editor views.
  *
@@ -24,21 +30,21 @@ namespace mod_videobranch;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class branch_manager {
-    /** @var \stdClass */
+    /** @var stdClass */
     private $activity;
-    /** @var \cm_info|\stdClass */
+    /** @var cm_info|stdClass */
     private $cm;
-    /** @var \context_module */
+    /** @var context_module */
     private $context;
 
     /**
      * Constructor.
      *
-     * @param \stdClass $activity Activity.
-     * @param \cm_info|\stdClass $cm Course module.
-     * @param \context_module $context Module context.
+     * @param stdClass $activity Activity.
+     * @param cm_info|stdClass $cm Course module.
+     * @param context_module $context Module context.
      */
-    public function __construct(\stdClass $activity, $cm, \context_module $context) {
+    public function __construct(stdClass $activity, $cm, context_module $context) {
         $this->activity = $activity;
         $this->cm = $cm;
         $this->context = $context;
@@ -176,7 +182,7 @@ class branch_manager {
                 'name' => format_string($video->name),
                 'source' => get_string('source_' . $video->sourcetype, 'videobranch'),
                 'isstart' => (bool)$video->isstart,
-                'editurl' => (string)new \moodle_url('/mod/videobranch/video.php',
+                'editurl' => (string)new moodle_url('/mod/videobranch/video.php',
                     ['id' => $this->cm->id, 'videoid' => $video->id]),
                 'deleteurl' => $this->delete_url('video', $video->id),
             ];
@@ -187,7 +193,7 @@ class branch_manager {
                 'id' => (int)$option->id,
                 'label' => format_string($option->label),
                 'target' => $this->describe_target($option, $videomap, $nodemap, $endingmap),
-                'editurl' => (string)new \moodle_url('/mod/videobranch/option.php',
+                'editurl' => (string)new moodle_url('/mod/videobranch/option.php',
                     ['id' => $this->cm->id, 'optionid' => $option->id, 'nodeid' => $option->nodeid]),
                 'deleteurl' => $this->delete_url('option', $option->id),
             ];
@@ -202,9 +208,9 @@ class branch_manager {
                 'time' => self::format_time((float)$node->triggersecond),
                 'options' => $optionsbynode[$node->id] ?? [],
                 'hasoptions' => !empty($optionsbynode[$node->id]),
-                'optionaddurl' => (string)new \moodle_url('/mod/videobranch/option.php',
+                'optionaddurl' => (string)new moodle_url('/mod/videobranch/option.php',
                     ['id' => $this->cm->id, 'nodeid' => $node->id]),
-                'editurl' => (string)new \moodle_url('/mod/videobranch/decision.php',
+                'editurl' => (string)new moodle_url('/mod/videobranch/decision.php',
                     ['id' => $this->cm->id, 'nodeid' => $node->id]),
                 'deleteurl' => $this->delete_url('node', $node->id),
             ];
@@ -214,7 +220,7 @@ class branch_manager {
             $clientendings[] = [
                 'id' => (int)$ending->id,
                 'name' => format_string($ending->name),
-                'editurl' => (string)new \moodle_url('/mod/videobranch/ending.php',
+                'editurl' => (string)new moodle_url('/mod/videobranch/ending.php',
                     ['id' => $this->cm->id, 'endingid' => $ending->id]),
                 'deleteurl' => $this->delete_url('ending', $ending->id),
             ];
@@ -248,7 +254,7 @@ class branch_manager {
             $option = $DB->get_record_sql($sql,
                 ['id' => $id, 'activityid' => $this->activity->id], MUST_EXIST);
             if ($DB->record_exists('videobranch_choices', ['optionid' => $option->id])) {
-                throw new \moodle_exception('cannotdeletereferenced', 'mod_videobranch');
+                throw new moodle_exception('cannotdeletereferenced', 'mod_videobranch');
             }
             $DB->delete_records('videobranch_options', ['id' => $option->id]);
             return;
@@ -257,13 +263,13 @@ class branch_manager {
             $node = $DB->get_record('videobranch_nodes', ['id' => $id, 'videobranchid' => $this->activity->id], '*', MUST_EXIST);
             if ($DB->record_exists('videobranch_options', ['targetnodeid' => $node->id]) ||
                 $DB->record_exists('videobranch_choices', ['nodeid' => $node->id])) {
-                throw new \moodle_exception('cannotdeletereferenced', 'mod_videobranch');
+                throw new moodle_exception('cannotdeletereferenced', 'mod_videobranch');
             }
             $optionids = $DB->get_fieldset_select('videobranch_options', 'id', 'nodeid = :nodeid', ['nodeid' => $node->id]);
             if ($optionids) {
                 [$insql, $params] = $DB->get_in_or_equal($optionids, SQL_PARAMS_NAMED, 'option');
                 if ($DB->record_exists_select('videobranch_choices', "optionid {$insql}", $params)) {
-                    throw new \moodle_exception('cannotdeletereferenced', 'mod_videobranch');
+                    throw new moodle_exception('cannotdeletereferenced', 'mod_videobranch');
                 }
             }
             $DB->delete_records('videobranch_options', ['nodeid' => $node->id]);
@@ -275,7 +281,7 @@ class branch_manager {
                 ['id' => $id, 'videobranchid' => $this->activity->id], '*', MUST_EXIST);
             if ($DB->record_exists('videobranch_options', ['targetendingid' => $ending->id]) ||
                 $DB->record_exists('videobranch_attempts', ['endingid' => $ending->id])) {
-                throw new \moodle_exception('cannotdeletereferenced', 'mod_videobranch');
+                throw new moodle_exception('cannotdeletereferenced', 'mod_videobranch');
             }
             $DB->delete_records('videobranch_endings', ['id' => $ending->id]);
             return;
@@ -286,29 +292,29 @@ class branch_manager {
                 $DB->record_exists('videobranch_options', ['targetvideoid' => $video->id]) ||
                 $DB->record_exists('videobranch_attempts', ['currentvideoid' => $video->id]) ||
                 $DB->record_exists('videobranch_choices', ['fromvideoid' => $video->id])) {
-                throw new \moodle_exception('cannotdeletereferenced', 'mod_videobranch');
+                throw new moodle_exception('cannotdeletereferenced', 'mod_videobranch');
             }
             get_file_storage()->delete_area_files($this->context->id, 'mod_videobranch', 'video', $video->id);
             $DB->delete_records('videobranch_videos', ['id' => $video->id]);
             return;
         }
-        throw new \moodle_exception('invalidentity', 'mod_videobranch');
+        throw new moodle_exception('invalidentity', 'mod_videobranch');
     }
 
     /**
      * Converts video record into safe client configuration.
      *
-     * @param \stdClass $video Video record.
+     * @param stdClass $video Video record.
      * @return array
      */
-    private function video_client_data(\stdClass $video): array {
+    private function video_client_data(stdClass $video): array {
         $url = '';
         if ($video->sourcetype === 'upload') {
             $files = get_file_storage()->get_area_files($this->context->id, 'mod_videobranch', 'video', $video->id,
                 'itemid, filepath, filename', false);
             $file = reset($files);
             if ($file) {
-                $url = \moodle_url::make_pluginfile_url($this->context->id, 'mod_videobranch', 'video', $video->id,
+                $url = moodle_url::make_pluginfile_url($this->context->id, 'mod_videobranch', 'video', $video->id,
                     $file->get_filepath(), $file->get_filename())->out(false);
             }
         } else {
@@ -326,12 +332,12 @@ class branch_manager {
     /**
      * Builds a destination payload for non-persistent teacher preview.
      *
-     * @param \stdClass $option Option record.
+     * @param stdClass $option Option record.
      * @param array $nodes Node records keyed by id.
      * @param array $endings Ending records keyed by id.
      * @return array
      */
-    private function preview_target_data(\stdClass $option, array $nodes, array $endings): array {
+    private function preview_target_data(stdClass $option, array $nodes, array $endings): array {
         if ($option->targettype === 'end') {
             $ending = $endings[$option->targetendingid] ?? null;
             return [
@@ -362,13 +368,13 @@ class branch_manager {
     /**
      * Human-readable target description for editor.
      *
-     * @param \stdClass $option Option record.
+     * @param stdClass $option Option record.
      * @param array $videos Videos map.
      * @param array $nodes Nodes map.
      * @param array $endings Endings map.
      * @return string
      */
-    private function describe_target(\stdClass $option, array $videos, array $nodes, array $endings): string {
+    private function describe_target(stdClass $option, array $videos, array $nodes, array $endings): string {
         if ($option->targettype === 'end') {
             return get_string('target_end_desc', 'videobranch',
                 isset($endings[$option->targetendingid]) ? $endings[$option->targetendingid]->name : '-');
@@ -392,7 +398,7 @@ class branch_manager {
      * @return string
      */
     private function delete_url(string $type, int $id): string {
-        return (string)new \moodle_url('/mod/videobranch/delete.php', [
+        return (string)new moodle_url('/mod/videobranch/delete.php', [
             'id' => $this->cm->id,
             'type' => $type,
             'itemid' => $id,

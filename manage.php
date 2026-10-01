@@ -22,6 +22,8 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use mod_videobranch\branch_manager;
+
 require_once(__DIR__ . '/../../config.php');
 
 $id = required_param('id', PARAM_INT);
@@ -36,7 +38,7 @@ $PAGE->set_url('/mod/videobranch/manage.php', ['id' => $cm->id]);
 $PAGE->set_title(get_string('managepaths', 'videobranch'));
 $PAGE->set_heading($course->fullname);
 
-$manager = new \mod_videobranch\branch_manager($activity, $cm, $context);
+$manager = new branch_manager($activity, $cm, $context);
 $data = $manager->get_manage_data();
 $data['name'] = format_string($activity->name);
 $data['videoaddurl'] = (string)new moodle_url('/mod/videobranch/video.php', ['id' => $cm->id]);

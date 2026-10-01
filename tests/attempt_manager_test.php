@@ -12,7 +12,7 @@
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * Tests for Branching Video.
@@ -21,7 +21,13 @@
  * @copyright  2026 Eduardo Kraus
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 namespace mod_videobranch;
+
+use advanced_testcase;
+use context_module;
+use moodle_exception;
+use stdClass;
 
 /**
  * Tests learner path persistence and validation.
@@ -33,7 +39,7 @@ namespace mod_videobranch;
  * @covers \mod_videobranch\attempt_manager
  * @covers \mod_videobranch\branch_manager
  */
-final class attempt_manager_test extends \advanced_testcase {
+final class attempt_manager_test extends advanced_testcase {
     /**
      * Teacher preview must not create learner data.
      */
@@ -46,7 +52,7 @@ final class attempt_manager_test extends \advanced_testcase {
         $activity = $this->getDataGenerator()->create_module('videobranch', ['course' => $course->id]);
         $graph = $this->create_graph($activity);
         $cm = get_coursemodule_from_instance('videobranch', $activity->id, $course->id, false, MUST_EXIST);
-        $context = \context_module::instance($cm->id);
+        $context = context_module::instance($cm->id);
 
         $manager = new branch_manager($activity, $cm, $context);
         $config = $manager->get_player_config($student->id, true);
@@ -88,7 +94,7 @@ final class attempt_manager_test extends \advanced_testcase {
         try {
             $manager->choose($student->id, $graph->node2, $graph->option2, $graph->video1, 20.0);
             $this->fail('A later decision must not be reachable before the first one is resolved.');
-        } catch (\moodle_exception $exception) {
+        } catch (moodle_exception $exception) {
             $this->assertEquals('invalidplaybackstate', $exception->errorcode);
         }
 
@@ -138,7 +144,7 @@ final class attempt_manager_test extends \advanced_testcase {
         ]);
         $graph = $this->create_graph($activity);
         $cm = get_coursemodule_from_instance('videobranch', $activity->id, $course->id, false, MUST_EXIST);
-        $context = \context_module::instance($cm->id);
+        $context = context_module::instance($cm->id);
         $attemptmanager = new attempt_manager($activity, $cm);
 
         $attemptmanager->save_state($student->id, $graph->video1, 10.0, [[0.0, 10.0]]);
@@ -177,7 +183,7 @@ final class attempt_manager_test extends \advanced_testcase {
 
         $manager->get_or_create($student->id);
 
-        $this->expectException(\moodle_exception::class);
+        $this->expectException(moodle_exception::class);
         $this->expectExceptionMessage(get_string('invalidplaybackstate', 'mod_videobranch'));
         $manager->save_state($student->id, $graph->video2, 1.0, [[0.0, 1.0]]);
     }
@@ -185,10 +191,10 @@ final class attempt_manager_test extends \advanced_testcase {
     /**
      * Creates a small graph with two sequential decisions and one ending.
      *
-     * @param \stdClass $activity Activity record.
-     * @return \stdClass
+     * @param stdClass $activity Activity record.
+     * @return stdClass
      */
-    private function create_graph(\stdClass $activity): \stdClass {
+    private function create_graph(stdClass $activity): stdClass {
         global $DB;
 
         $now = time();

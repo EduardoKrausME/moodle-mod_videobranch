@@ -22,6 +22,9 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use core\output\notification;
+use mod_videobranch\form\decision_form;
+
 require_once(__DIR__ . '/../../config.php');
 require_once("{$CFG->libdir}/formslib.php");
 
@@ -39,14 +42,14 @@ $videos = $DB->get_records_menu('videobranch_videos',
     'isstart DESC, sortorder ASC, id ASC', 'id,name');
 if (!$videos) {
     redirect(new moodle_url('/mod/videobranch/video.php', ['id' => $cm->id]),
-        get_string('addvideofirst', 'videobranch'), null, \core\output\notification::NOTIFY_WARNING);
+        get_string('addvideofirst', 'videobranch'), null, notification::NOTIFY_WARNING);
 }
 $node = $nodeid ? $DB->get_record('videobranch_nodes', ['id' => $nodeid, 'videobranchid' => $activity->id], '*', MUST_EXIST) : null;
 
 $PAGE->set_url('/mod/videobranch/decision.php', ['id' => $cm->id, 'nodeid' => $nodeid]);
 $PAGE->set_title(get_string($node ? 'editdecision' : 'adddecision', 'videobranch'));
 $PAGE->set_heading($course->fullname);
-$form = new \mod_videobranch\form\decision_form(null, ['videos' => $videos]);
+$form = new decision_form(null, ['videos' => $videos]);
 if ($form->is_cancelled()) {
     redirect(new moodle_url('/mod/videobranch/manage.php', ['id' => $cm->id]));
 }

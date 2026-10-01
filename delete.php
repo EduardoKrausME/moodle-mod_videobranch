@@ -22,6 +22,8 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use mod_videobranch\branch_manager;
+
 require_once(__DIR__ . '/../../config.php');
 
 $id = required_param('id', PARAM_INT);
@@ -37,6 +39,6 @@ require_course_login($course, true, $cm);
 $context = context_module::instance($cm->id);
 require_capability('mod/videobranch:manage', $context);
 
-$manager = new \mod_videobranch\branch_manager($activity, $cm, $context);
+$manager = new branch_manager($activity, $cm, $context);
 $manager->delete_entity($type, $itemid);
 redirect(new moodle_url('/mod/videobranch/manage.php', ['id' => $cm->id]), get_string('deleted', 'videobranch'));

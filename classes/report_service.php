@@ -16,6 +16,10 @@
 
 namespace mod_videobranch;
 
+use cm_info;
+use moodle_url;
+use stdClass;
+
 /**
  * Builds aggregate and learner reports.
  *
@@ -24,18 +28,18 @@ namespace mod_videobranch;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class report_service {
-    /** @var \stdClass */
+    /** @var stdClass */
     private $activity;
-    /** @var \cm_info|\stdClass */
+    /** @var cm_info|stdClass */
     private $cm;
 
     /**
      * Constructor.
      *
-     * @param \stdClass $activity Activity.
-     * @param \cm_info|\stdClass $cm Course module.
+     * @param stdClass $activity Activity.
+     * @param cm_info|stdClass $cm Course module.
      */
-    public function __construct(\stdClass $activity, $cm) {
+    public function __construct(stdClass $activity, $cm) {
         $this->activity = $activity;
         $this->cm = $cm;
     }
@@ -71,7 +75,7 @@ class report_service {
                     'lastpoint' => $video ? format_string($video) . ' — ' .
                         branch_manager::format_time((float)$attempt->currentposition) : '-',
                     'timemodified' => userdate($attempt->timemodified),
-                    'url' => (string)new \moodle_url('/mod/videobranch/report/user.php',
+                    'url' => (string)new moodle_url('/mod/videobranch/report/user.php',
                         ['id' => $this->cm->id, 'userid' => $user->id]),
                 ];
             }

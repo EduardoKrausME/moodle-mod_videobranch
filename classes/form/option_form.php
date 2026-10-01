@@ -16,6 +16,8 @@
 
 namespace mod_videobranch\form;
 
+use moodleform;
+
 /**
  * Decision option editor form.
  *
@@ -23,7 +25,7 @@ namespace mod_videobranch\form;
  * @copyright 2026 Eduardo Kraus
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class option_form extends \moodleform {
+class option_form extends moodleform {
     /**
      * Defines fields.
      *

@@ -22,6 +22,8 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use mod_videobranch\form\video_form;
+
 require_once(__DIR__ . '/../../config.php');
 require_once("{$CFG->libdir}/formslib.php");
 
@@ -43,7 +45,7 @@ $PAGE->set_url('/mod/videobranch/video.php', ['id' => $cm->id, 'videoid' => $vid
 $PAGE->set_title(get_string($video ? 'editvideo' : 'addvideo', 'videobranch'));
 $PAGE->set_heading($course->fullname);
 
-$form = new \mod_videobranch\form\video_form();
+$form = new video_form();
 if ($form->is_cancelled()) {
     redirect(new moodle_url('/mod/videobranch/manage.php', ['id' => $cm->id]));
 }

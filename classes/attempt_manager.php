@@ -16,6 +16,13 @@
 
 namespace mod_videobranch;
 
+use cm_info;
+use completion_info;
+use context_module;
+use core\lock\lock_config;
+use moodle_exception;
+use stdClass;
+
 /**
  * Manages learner path state and decision history.
  *
@@ -24,18 +31,18 @@ namespace mod_videobranch;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class attempt_manager {
-    /** @var \stdClass */
+    /** @var stdClass */
     private $activity;
-    /** @var \cm_info|\stdClass */
+    /** @var cm_info|stdClass */
     private $cm;
 
     /**
      * Constructor.
      *
-     * @param \stdClass $activity Activity record.
-     * @param \cm_info|\stdClass $cm Course module.
+     * @param stdClass $activity Activity record.
+     * @param cm_info|stdClass $cm Course module.
      */
-    public function __construct(\stdClass $activity, $cm) {
+    public function __construct(stdClass $activity, $cm) {
         $this->activity = $activity;
         $this->cm = $cm;
     }
@@ -44,9 +51,9 @@ class attempt_manager {
      * Gets or creates one attempt per user and activity.
      *
      * @param int $userid User id.
-     * @return \stdClass
+     * @return stdClass
      */
-    public function get_or_create(int $userid): \stdClass {
+    public function get_or_create(int $userid): stdClass {
         global $DB;
         $conditions = [
             'videobranchid' => $this->activity->id,
@@ -56,10 +63,10 @@ class attempt_manager {
             return $attempt;
         }
 
-        $factory = \core\lock\lock_config::get_lock_factory('mod_videobranch');
+        $factory = lock_config::get_lock_factory('mod_videobranch');
         $lock = $factory->get_lock('attempt:' . $this->activity->id . ':' . $userid, 10);
         if (!$lock) {
-            throw new \moodle_exception('attemptlocktimeout', 'mod_videobranch');
+            throw new moodle_exception('attemptlocktimeout', 'mod_videobranch');
         }
         try {
             if ($attempt = $DB->get_record('videobranch_attempts', $conditions)) {
@@ -97,9 +104,9 @@ class attempt_manager {
      * that the learner previously followed another path.
      *
      * @param int $userid User id.
-     * @return \stdClass Updated attempt.
+     * @return stdClass Updated attempt.
      */
-    public function restart(int $userid): \stdClass {
+    public function restart(int $userid): stdClass {
         global $DB;
 
         $attempt = $this->get_or_create($userid);
@@ -147,9 +154,9 @@ class attempt_manager {
      * @param int $videoid Video id.
      * @param float $position Current position.
      * @param array $segments Watched segments for the current video.
-     * @return \stdClass Updated attempt.
+     * @return stdClass Updated attempt.
      */
-    public function save_state(int $userid, int $videoid, float $position, array $segments): \stdClass {
+    public function save_state(int $userid, int $videoid, float $position, array $segments): stdClass {
         global $DB;
         $this->assert_video($videoid);
         $attempt = $this->get_or_create($userid);
@@ -160,8 +167,8 @@ class attempt_manager {
             MUST_EXIST
         );
         if (!empty($attempt->completed) ||
-                (!empty($attempt->currentvideoid) && (int)$attempt->currentvideoid !== $videoid)) {
-            throw new \moodle_exception('invalidplaybackstate', 'mod_videobranch');
+            (!empty($attempt->currentvideoid) && (int)$attempt->currentvideoid !== $videoid)) {
+            throw new moodle_exception('invalidplaybackstate', 'mod_videobranch');
         }
 
         $now = time();
@@ -171,7 +178,7 @@ class attempt_manager {
             $elapsed = max(0, $now - (int)$attempt->timemodified);
             $maxadvance = max(10.0, ($elapsed * 2.5) + 5.0);
             if ($position > (float)$attempt->currentposition + $maxadvance) {
-                throw new \moodle_exception('invalidplaybackstate', 'mod_videobranch');
+                throw new moodle_exception('invalidplaybackstate', 'mod_videobranch');
             }
         }
 
@@ -207,7 +214,7 @@ class attempt_manager {
         $node = $DB->get_record('videobranch_nodes', ['id' => $nodeid, 'videobranchid' => $this->activity->id], '*', MUST_EXIST);
         $option = $DB->get_record('videobranch_options', ['id' => $optionid, 'nodeid' => $nodeid], '*', MUST_EXIST);
         if ((int)$node->videoid !== $videoid) {
-            throw new \moodle_exception('invaliddecision', 'mod_videobranch');
+            throw new moodle_exception('invaliddecision', 'mod_videobranch');
         }
         $attempt = $this->get_or_create($userid);
         $transaction = $DB->start_delegated_transaction();
@@ -224,7 +231,7 @@ class attempt_manager {
         ]);
         if ($existing) {
             if (empty($this->activity->allowback)) {
-                throw new \moodle_exception('backnotallowed', 'mod_videobranch');
+                throw new moodle_exception('backnotallowed', 'mod_videobranch');
             }
             $this->deactivate_from_sequence($attempt->id, (int)$existing->sequence);
         }
@@ -277,7 +284,7 @@ class attempt_manager {
     public function rewind(int $userid, int $choiceid): array {
         global $DB;
         if (empty($this->activity->allowback)) {
-            throw new \moodle_exception('backnotallowed', 'mod_videobranch');
+            throw new moodle_exception('backnotallowed', 'mod_videobranch');
         }
         $attempt = $this->get_or_create($userid);
         $transaction = $DB->start_delegated_transaction();
@@ -348,10 +355,10 @@ class attempt_manager {
     /**
      * Resolves option target to client destination.
      *
-     * @param \stdClass $option Option record.
+     * @param stdClass $option Option record.
      * @return array
      */
-    private function resolve_destination(\stdClass $option): array {
+    private function resolve_destination(stdClass $option): array {
         global $DB;
         if ($option->targettype === 'end') {
             $ending = $DB->get_record('videobranch_endings', [
@@ -362,7 +369,7 @@ class attempt_manager {
                 'type' => 'end',
                 'endingid' => (int)$ending->id,
                 'endingname' => format_string($ending->name),
-                'message' => format_text($ending->message, FORMAT_HTML, ['context' => \context_module::instance($this->cm->id)]),
+                'message' => format_text($ending->message, FORMAT_HTML, ['context' => context_module::instance($this->cm->id)]),
                 'videoid' => 0,
                 'second' => 0.0,
                 'nodeid' => 0,
@@ -417,7 +424,7 @@ class attempt_manager {
      * @return void
      */
     private function update_completion(int $userid): void {
-        $completion = new \completion_info(get_course($this->activity->course));
+        $completion = new completion_info(get_course($this->activity->course));
         if ($completion->is_enabled($this->cm)) {
             $completion->update_state($this->cm, COMPLETION_UNKNOWN, $userid);
         }
@@ -426,12 +433,12 @@ class attempt_manager {
     /**
      * Limits playback to the first unresolved decision crossed by the request.
      *
-     * @param \stdClass $attempt Attempt record.
+     * @param stdClass $attempt Attempt record.
      * @param int $videoid Video id.
      * @param float $position Requested position.
      * @return float
      */
-    private function limit_position_to_next_decision(\stdClass $attempt, int $videoid, float $position): float {
+    private function limit_position_to_next_decision(stdClass $attempt, int $videoid, float $position): float {
         if ($position <= (float)$attempt->currentposition) {
             return $position;
         }
@@ -444,24 +451,24 @@ class attempt_manager {
     /**
      * Ensures that a choice belongs to the next reachable decision.
      *
-     * @param \stdClass $attempt Attempt record.
-     * @param \stdClass $node Decision node.
+     * @param stdClass $attempt Attempt record.
+     * @param stdClass $node Decision node.
      * @param int $videoid Current video id.
      * @param float $position Current position.
      * @return void
      */
     private function assert_reachable_decision(
-        \stdClass $attempt,
-        \stdClass $node,
-        int $videoid,
-        float $position
+        stdClass $attempt,
+        stdClass $node,
+        int       $videoid,
+        float     $position
     ): void {
         if (!empty($attempt->completed) ||
-                (int)$attempt->currentvideoid !== $videoid ||
-                (int)$node->videoid !== $videoid ||
-                abs($position - (float)$node->triggersecond) > 2.0 ||
-                abs((float)$attempt->currentposition - (float)$node->triggersecond) > 2.0) {
-            throw new \moodle_exception('invalidplaybackstate', 'mod_videobranch');
+            (int)$attempt->currentvideoid !== $videoid ||
+            (int)$node->videoid !== $videoid ||
+            abs($position - (float)$node->triggersecond) > 2.0 ||
+            abs((float)$attempt->currentposition - (float)$node->triggersecond) > 2.0) {
+            throw new moodle_exception('invalidplaybackstate', 'mod_videobranch');
         }
         $next = $this->find_next_unresolved_decision(
             (int)$attempt->id,
@@ -470,7 +477,7 @@ class attempt_manager {
             (float)$node->triggersecond + 0.5
         );
         if (!$next || (int)$next->id !== (int)$node->id) {
-            throw new \moodle_exception('invalidplaybackstate', 'mod_videobranch');
+            throw new moodle_exception('invalidplaybackstate', 'mod_videobranch');
         }
     }
 
@@ -481,14 +488,14 @@ class attempt_manager {
      * @param int $videoid Video id.
      * @param float $minsecond Minimum time.
      * @param float|null $maxsecond Maximum time.
-     * @return \stdClass|null
+     * @return stdClass|null
      */
     private function find_next_unresolved_decision(
-        int $attemptid,
-        int $videoid,
-        float $minsecond,
+        int    $attemptid,
+        int    $videoid,
+        float  $minsecond,
         ?float $maxsecond = null
-    ): ?\stdClass {
+    ): ?stdClass {
         global $DB;
         $params = [
             'attemptid' => $attemptid,
@@ -546,7 +553,7 @@ class attempt_manager {
     private function assert_video(int $videoid): void {
         global $DB;
         if (!$DB->record_exists('videobranch_videos', ['id' => $videoid, 'videobranchid' => $this->activity->id])) {
-            throw new \moodle_exception('invalidvideo', 'mod_videobranch');
+            throw new moodle_exception('invalidvideo', 'mod_videobranch');
         }
     }
 
