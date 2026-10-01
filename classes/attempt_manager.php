@@ -460,8 +460,8 @@ class attempt_manager {
     private function assert_reachable_decision(
         stdClass $attempt,
         stdClass $node,
-        int       $videoid,
-        float     $position
+        int $videoid,
+        float $position
     ): void {
         if (!empty($attempt->completed) ||
             (int)$attempt->currentvideoid !== $videoid ||
@@ -491,9 +491,9 @@ class attempt_manager {
      * @return stdClass|null
      */
     private function find_next_unresolved_decision(
-        int    $attemptid,
-        int    $videoid,
-        float  $minsecond,
+        int $attemptid,
+        int $videoid,
+        float $minsecond,
         ?float $maxsecond = null
     ): ?stdClass {
         global $DB;
