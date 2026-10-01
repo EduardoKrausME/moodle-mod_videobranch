@@ -37,11 +37,6 @@ require_once($CFG->dirroot . '/mod/videobranch/lib.php');
  *
  * @coversNothing
  */
- * @package mod_videobranch
- * @category test
- * @copyright 2026 Eduardo Kraus
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
 #[CoversFunction('videobranch_get_coursemodule_info')]
 #[CoversFunction('videobranch_reset_userdata')]
 final class lib_test extends advanced_testcase {
