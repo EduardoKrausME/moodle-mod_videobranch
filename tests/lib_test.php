@@ -27,8 +27,8 @@ namespace mod_videobranch;
 use advanced_testcase;
 use PHPUnit\Framework\Attributes\CoversFunction;
 
-global $CFG;
 defined('MOODLE_INTERNAL') || die;
+global $CFG;
 
 require_once($CFG->dirroot . '/mod/videobranch/lib.php');
 
