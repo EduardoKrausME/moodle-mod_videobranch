@@ -28,16 +28,13 @@ use advanced_testcase;
 use backup;
 use backup_controller;
 use backup_setting;
-use PHPUnit\Framework\Attributes\CoversNothing;
 use restore_controller;
 use restore_dbops;
 
 /**
  * Tests Branching Video backup and restore.
  *
- * @coversNothing
  */
-#[CoversNothing]
 final class restore_test extends advanced_testcase {
     /**
      * Loads backup and restore APIs.
@@ -52,6 +49,8 @@ final class restore_test extends advanced_testcase {
 
     /**
      * Watched segments and the active path survive restore with remapped ids.
+     *
+     * @coversNothing
      */
     public function test_restore_preserves_watched_segments_and_rebuilds_path(): void {
         global $CFG, $DB;
