@@ -56,6 +56,30 @@ final class lib_test extends advanced_testcase {
     }
 
     /**
+     * Custom completion availability follows the persisted setting when cm_info is stale.
+     *
+     * @covers \mod_videobranch\completion\custom_completion::get_available_custom_rules
+     */
+    public function test_custom_completion_uses_persisted_setting_when_cm_info_is_stale(): void {
+        global $DB;
+
+        $this->resetAfterTest(true);
+        $course = $this->getDataGenerator()->create_course(['enablecompletion' => COMPLETION_ENABLED]);
+        $activity = $this->getDataGenerator()->get_plugin_generator('mod_videobranch')->create_instance(
+            ['course' => $course->id, 'completionending' => 0],
+            ['completion' => COMPLETION_TRACKING_AUTOMATIC]
+        );
+
+        $cm = get_fast_modinfo($course)->get_cm($activity->cmid);
+        $this->assertEmpty($cm->customdata['customcompletionrules']['completionending']);
+
+        $DB->set_field('videobranch', 'completionending', 1, ['id' => $activity->id]);
+
+        $completion = new \mod_videobranch\completion\custom_completion($cm, 0);
+        $this->assertSame(['completionending'], $completion->get_available_custom_rules());
+    }
+
+    /**
      * Course reset removes attempts and dependent choices.
      *
      * @covers ::videobranch_reset_userdata
