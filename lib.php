@@ -65,7 +65,7 @@ function videobranch_add_instance(stdClass $data, ?mod_videobranch_mod_form $mfo
     $data->timecreated = time();
     $data->timemodified = time();
     if (!isset($data->completionending)) {
-        $data->completionending = 1;
+        $data->completionending = 0;
     }
     return $DB->insert_record('videobranch', $data);
 }
