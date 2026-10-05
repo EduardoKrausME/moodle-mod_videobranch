@@ -29,5 +29,26 @@
  * @return bool
  */
 function xmldb_videobranch_upgrade(int $oldversion): bool {
+    global $DB;
+
+    if ($oldversion < 2026100501) {
+        $dbman = $DB->get_manager();
+        $table = new xmldb_table('videobranch');
+        $field = new xmldb_field(
+            'completionending',
+            XMLDB_TYPE_INTEGER,
+            '2',
+            null,
+            XMLDB_NOTNULL,
+            null,
+            '0',
+            'showpath'
+        );
+
+        $dbman->change_field_default($table, $field);
+
+        upgrade_mod_savepoint(true, 2026100501, 'videobranch');
+    }
+
     return true;
 }
