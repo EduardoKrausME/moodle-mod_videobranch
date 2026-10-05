@@ -425,7 +425,10 @@ class attempt_manager {
      */
     private function update_completion(int $userid): void {
         $completion = new completion_info(get_course($this->activity->course));
-        if ($completion->is_enabled($this->cm)) {
+        if (
+            $completion->is_enabled($this->cm) === COMPLETION_TRACKING_AUTOMATIC
+            && !empty($this->activity->completionending)
+        ) {
             $completion->update_state($this->cm, COMPLETION_UNKNOWN, $userid);
         }
     }
