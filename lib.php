@@ -142,14 +142,32 @@ function videobranch_get_coursemodule_info($coursemodule): ?cached_cm_info {
     if ($coursemodule->showdescription) {
         $info->content = format_module_intro('videobranch', $activity, $coursemodule->id, false);
     }
+    $info->customdata = [];
     if ($coursemodule->completion == COMPLETION_TRACKING_AUTOMATIC) {
-        $info->customdata = [
-            'customcompletionrules' => [
-                'completionending' => (int)$activity->completionending,
-            ],
-        ];
+        $info->customdata['customcompletionrules']['completionending'] = (int)$activity->completionending;
     }
     return $info;
+}
+
+/**
+ * Returns descriptions for the active custom completion rules.
+ *
+ * @param cm_info|stdClass $cm Course module information.
+ * @return array
+ */
+function mod_videobranch_get_completion_active_rule_descriptions($cm): array {
+    if (
+        empty($cm->customdata['customcompletionrules'])
+        || $cm->completion != COMPLETION_TRACKING_AUTOMATIC
+    ) {
+        return [];
+    }
+
+    if (empty($cm->customdata['customcompletionrules']['completionending'])) {
+        return [];
+    }
+
+    return [get_string('completionending', 'videobranch')];
 }
 
 /**
