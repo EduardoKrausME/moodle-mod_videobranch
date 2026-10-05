@@ -60,4 +60,13 @@ class restore_videobranch_activity_task extends restore_activity_task {
     public static function define_decode_rules() {
         return [];
     }
+    /**
+     * Defines restore log rules.
+     *
+     * @return array
+     */
+    public static function define_restore_log_rules() {
+        return [];
+    }
+
 }
