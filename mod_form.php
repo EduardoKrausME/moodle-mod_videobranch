@@ -106,4 +106,28 @@ class mod_videobranch_mod_form extends moodleform_mod {
         }
     }
 
+
+    /**
+     * Normalises custom completion fields before saving.
+     *
+     * @param stdClass $data Form data.
+     * @return void
+     */
+    public function data_postprocessing($data): void {
+        parent::data_postprocessing($data);
+
+        if (!empty($data->completionunlocked)) {
+            $suffix = $this->get_suffix();
+            $completionfield = 'completion' . $suffix;
+            $rulefield = 'completionending' . $suffix;
+            $automatic = !empty($data->{$completionfield})
+                && (int)$data->{$completionfield} === COMPLETION_TRACKING_AUTOMATIC;
+
+            if (!$automatic || empty($data->{$rulefield})) {
+                $data->{$rulefield} = 0;
+            }
+        }
+    }
+
+
 }
