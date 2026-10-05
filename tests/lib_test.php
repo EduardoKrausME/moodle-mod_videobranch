@@ -58,7 +58,7 @@ final class lib_test extends advanced_testcase {
     /**
      * Custom completion uses the rule exposed through cm_info.
      *
-     * @covers \\mod_videobranch\\completion\\custom_completion::get_state
+     * @covers \mod_videobranch\completion\custom_completion::get_state
      */
     public function test_custom_completion_runtime_contract(): void {
         $this->resetAfterTest(true);
@@ -69,7 +69,7 @@ final class lib_test extends advanced_testcase {
         );
 
         $cm = get_fast_modinfo($course)->get_cm($activity->cmid);
-        $completion = new \\mod_videobranch\\completion\\custom_completion($cm, 0);
+        $completion = new \mod_videobranch\completion\custom_completion($cm, 0);
 
         $this->assertSame(['completionending'], $completion->get_available_custom_rules());
         $this->assertSame(COMPLETION_INCOMPLETE, $completion->get_state('completionending'));
