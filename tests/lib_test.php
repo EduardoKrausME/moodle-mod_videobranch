@@ -56,27 +56,23 @@ final class lib_test extends advanced_testcase {
     }
 
     /**
-     * Custom completion availability follows the persisted setting when cm_info is stale.
+     * Custom completion uses the rule exposed through cm_info.
      *
-     * @covers \mod_videobranch\completion\custom_completion::get_available_custom_rules
+     * @covers \\mod_videobranch\\completion\\custom_completion::get_state
      */
-    public function test_custom_completion_uses_persisted_setting_when_cm_info_is_stale(): void {
-        global $DB;
-
+    public function test_custom_completion_runtime_contract(): void {
         $this->resetAfterTest(true);
         $course = $this->getDataGenerator()->create_course(['enablecompletion' => COMPLETION_ENABLED]);
         $activity = $this->getDataGenerator()->get_plugin_generator('mod_videobranch')->create_instance(
-            ['course' => $course->id, 'completionending' => 0],
+            ['course' => $course->id, 'completionending' => 1],
             ['completion' => COMPLETION_TRACKING_AUTOMATIC]
         );
 
         $cm = get_fast_modinfo($course)->get_cm($activity->cmid);
-        $this->assertEmpty($cm->customdata['customcompletionrules']['completionending']);
+        $completion = new \\mod_videobranch\\completion\\custom_completion($cm, 0);
 
-        $DB->set_field('videobranch', 'completionending', 1, ['id' => $activity->id]);
-
-        $completion = new \mod_videobranch\completion\custom_completion($cm, 0);
         $this->assertSame(['completionending'], $completion->get_available_custom_rules());
+        $this->assertSame(COMPLETION_INCOMPLETE, $completion->get_state('completionending'));
     }
 
     /**
