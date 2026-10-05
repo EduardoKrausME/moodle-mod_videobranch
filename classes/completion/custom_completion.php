@@ -59,32 +59,6 @@ class custom_completion extends activity_custom_completion {
     }
 
     /**
-     * Returns the custom completion rules enabled for this activity instance.
-     *
-     * The persisted activity setting is authoritative here. cm_info custom data can be stale
-     * immediately after completion settings change, which would otherwise make validate_rule()
-     * reject a rule that is already enabled in the database.
-     *
-     * @return string[]
-     */
-    public function get_available_custom_rules(): array {
-        if ((int)$this->cm->completion !== COMPLETION_TRACKING_AUTOMATIC) {
-            return [];
-        }
-
-        global $DB;
-
-        $activity = $DB->get_record(
-            'videobranch',
-            ['id' => $this->cm->instance],
-            'id,completionending',
-            MUST_EXIST
-        );
-
-        return !empty($activity->completionending) ? [self::RULE_ENDING] : [];
-    }
-
-    /**
      * Describes active custom completion rules.
      *
      * @return array
