@@ -26,6 +26,9 @@ use core_completion\activity_custom_completion;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class custom_completion extends activity_custom_completion {
+    /** @var string Completion rule name. */
+    private const RULE_ENDING = 'completionending';
+
     /**
      * Returns completion state for the ending rule.
      *
@@ -52,7 +55,38 @@ class custom_completion extends activity_custom_completion {
      * @return array
      */
     public static function get_defined_custom_rules(): array {
-        return ['completionending'];
+        return [self::RULE_ENDING];
+    }
+
+    /**
+     * Returns the custom completion rules enabled for this activity instance.
+     *
+     * Moodle normally reads enabled rules from cm_info custom data. During a cache rebuild,
+     * or immediately after completion settings change, that custom data can be temporarily absent.
+     * In that case, use the persisted activity setting instead of rejecting a valid rule.
+     *
+     * @return string[]
+     */
+    public function get_available_custom_rules(): array {
+        $customdata = (array)$this->cm->get_custom_data();
+        if (array_key_exists('customcompletionrules', $customdata)) {
+            return parent::get_available_custom_rules();
+        }
+
+        if ((int)$this->cm->completion !== COMPLETION_TRACKING_AUTOMATIC) {
+            return [];
+        }
+
+        global $DB;
+
+        $activity = $DB->get_record(
+            'videobranch',
+            ['id' => $this->cm->instance],
+            'id,completionending',
+            MUST_EXIST
+        );
+
+        return !empty($activity->completionending) ? [self::RULE_ENDING] : [];
     }
 
     /**
@@ -61,7 +95,7 @@ class custom_completion extends activity_custom_completion {
      * @return array
      */
     public function get_custom_rule_descriptions(): array {
-        return ['completionending' => get_string('completionending', 'videobranch')];
+        return [self::RULE_ENDING => get_string('completionending', 'videobranch')];
     }
 
     /**
@@ -70,6 +104,6 @@ class custom_completion extends activity_custom_completion {
      * @return array
      */
     public function get_sort_order(): array {
-        return ['completionview', 'completionending'];
+        return ['completionview', self::RULE_ENDING];
     }
 }
